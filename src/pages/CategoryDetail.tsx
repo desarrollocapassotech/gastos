@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, Calendar, DollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useExpenseStore } from '@/hooks/useExpenseStore';
+import { Expense, useExpenseStore } from '@/hooks/useExpenseStore';
 import { formatCurrency } from '@/lib/formatters';
 import { FloatingExpenseButton } from '@/components/FloatingExpenseButton';
+import { EditExpenseModal } from '@/components/EditExpenseModal';
 
 const CategoryDetail = () => {
   const { category } = useParams<{ category: string }>();
@@ -23,6 +24,9 @@ const CategoryDetail = () => {
   );
 
   const totalAmount = categoryExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+
+  const { updateExpense } = useExpenseStore();
+const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   if (!categoryInfo) {
     return (
@@ -103,40 +107,60 @@ const CategoryDetail = () => {
                   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                   .map((expense) => (
                     <div 
-                      key={expense.id} 
-                      className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900 mb-1">
-                          {expense.description}
-                        </div>
-                        <div className="flex items-center gap-3 text-sm text-gray-500">
-                          <span className="flex items-center gap-1">
-                            <Calendar size={14} />
-                            {new Date(expense.date).toLocaleDateString('es')}
-                          </span>
-                          {expense.installments && (
-                            <Badge variant="outline" className="text-xs">
-                              Cuota {expense.installments.current}/{expense.installments.total}
-                            </Badge>
-                          )}
-                        </div>
-                        {expense.installments && (
-                          <div className="text-xs text-gray-400 mt-1">
-                            Total original: {formatCurrency(expense.installments.originalAmount)}
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-lg font-semibold text-gray-900">
-                        {formatCurrency(expense.amount)}
-                      </div>
-                    </div>
+  key={expense.id} 
+  className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+>
+  <div className="flex-1">
+    <div className="font-medium text-gray-900 mb-1">
+      {expense.description}
+    </div>
+    <div className="flex items-center gap-3 text-sm text-gray-500">
+      <span className="flex items-center gap-1">
+        <Calendar size={14} />
+        {new Date(expense.date).toLocaleDateString('es')}
+      </span>
+      {expense.installments && (
+        <Badge variant="outline" className="text-xs">
+          Cuota {expense.installments.current}/{expense.installments.total}
+        </Badge>
+      )}
+    </div>
+    {expense.installments && (
+      <div className="text-xs text-gray-400 mt-1">
+        Total original: {formatCurrency(expense.installments.originalAmount)}
+      </div>
+    )}
+  </div>
+  <div className="flex items-center gap-2">
+    <button
+      onClick={() => setEditingExpense(expense)}
+      className="text-blue-600 hover:text-blue-800 text-sm"
+    >
+      Editar
+    </button>
+    <div className="text-lg font-semibold text-gray-900">
+      {formatCurrency(expense.amount)}
+    </div>
+  </div>
+</div>
                   ))}
               </div>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal de edición */}
+{editingExpense && (
+  <EditExpenseModal
+    expense={editingExpense}
+    onSave={(updatedData) => {
+      updateExpense(editingExpense.id, updatedData);
+      setEditingExpense(null);
+    }}
+    onClose={() => setEditingExpense(null)}
+  />
+)}
       
       <FloatingExpenseButton />
     </div>
