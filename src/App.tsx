@@ -20,6 +20,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/projected" element={<ProjectedExpenses />} />
+          <Route path="/month/:year/:month" element={<MonthDetail />} />
           <Route path="/category/:category" element={<CategoryDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

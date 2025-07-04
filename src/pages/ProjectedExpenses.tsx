@@ -128,25 +128,30 @@ const ProjectedExpenses = () => {
                 }
 
                 return (
-                  <div
+                  <Link
                     key={date.toISOString()}
-                    className={`p-4 rounded-lg border transition-colors ${cardClass}`}
+                    to={`/month/${date.getFullYear()}/${date.getMonth() + 1}`}
+                    className="block"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium text-gray-900 capitalize">
-                        {formatMonth(date)}
-                      </h3>
-                      <Badge variant={badgeVariant} className="text-xs">
-                        {statusText}
-                      </Badge>
+                    <div
+                      className={`p-4 rounded-lg border transition-colors hover:shadow-md cursor-pointer ${cardClass}`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium text-gray-900 capitalize">
+                          {formatMonth(date)}
+                        </h3>
+                        <Badge variant={badgeVariant} className="text-xs">
+                          {statusText}
+                        </Badge>
+                      </div>
+                      <div className="text-lg font-semibold text-gray-900">
+                        {formatCurrency(total)}
+                      </div>
+                      {!hasExpenses && (
+                        <p className="text-sm text-gray-500 mt-1">Sin gastos</p>
+                      )}
                     </div>
-                    <div className="text-lg font-semibold text-gray-900">
-                      {formatCurrency(total)}
-                    </div>
-                    {!hasExpenses && (
-                      <p className="text-sm text-gray-500 mt-1">Sin gastos</p>
-                    )}
-                  </div>
+                  </Link>
                 );
               })}
             </div>
