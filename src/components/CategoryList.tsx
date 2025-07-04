@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
 import { formatCurrency } from '@/lib/formatters';
 
 interface Category {
@@ -17,6 +18,8 @@ interface CategoryListProps {
 }
 
 export const CategoryList: React.FC<CategoryListProps> = ({ categories }) => {
+  const navigate = useNavigate();
+
   if (categories.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -26,12 +29,17 @@ export const CategoryList: React.FC<CategoryListProps> = ({ categories }) => {
     );
   }
 
+  const handleCategoryClick = (categoryName: string) => {
+    navigate(`/category/${encodeURIComponent(categoryName)}`);
+  };
+
   return (
     <div className="space-y-3">
       {categories.map((category) => (
         <div 
           key={category.id}
           className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+          onClick={() => handleCategoryClick(category.name)}
         >
           <div className="flex items-center gap-3">
             <div 
