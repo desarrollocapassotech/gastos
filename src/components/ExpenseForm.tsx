@@ -72,6 +72,8 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ open, onClose }) => {
         title: "¡Éxito!",
         description: `Gasto agregado en ${installments} cuotas`,
       });
+
+      window.location.reload();
     } else {
       addExpense({
         amount: numericAmount,

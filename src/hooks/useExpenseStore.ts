@@ -31,7 +31,7 @@ const DEFAULT_CATEGORIES: Category[] = [
   { id: '7', name: 'Entrenamiento', color: '#8B5CF6', icon: '💪🏼' },
   { id: '8', name: 'Educación', color: '#6366F1', icon: '📚' },
   { id: '9', name: 'Regalos', color: 'pink', icon: '🎁' },
-  { id: '10', name: 'Impuestos', color: 'black', icon: '🎁' },
+  { id: '10', name: 'Impuestos', color: 'black', icon: '🥷🏻' },
   { id: '11', name: 'Trabajo', color: 'blue', icon: '💻' },
   { id: '12', name: 'Otros', color: '#64748B', icon: '📦' },
 ];
@@ -96,6 +96,14 @@ export const useExpenseStore = () => {
     };
 
     setExpenses(prev => [newExpense, ...prev]);
+  };
+
+  const updateExpense = (id: string, updatedData: Partial<Omit<Expense, 'id'>>) => {
+    setExpenses(prev =>
+      prev.map(expense =>
+        expense.id === id ? { ...expense, ...updatedData } : expense
+      )
+    );
   };
 
   const addInstallmentExpense = (
@@ -191,6 +199,7 @@ export const useExpenseStore = () => {
     expenses,
     categories,
     addExpense,
+    updateExpense,
     addInstallmentExpense,
     deleteExpense,
     addCategory,

@@ -6,9 +6,10 @@ import { Link } from 'react-router-dom';
 import { ExpenseChart } from '@/components/ExpenseChart';
 import { CategoryList } from '@/components/CategoryList';
 import { MonthNavigator } from '@/components/MonthNavigator';
-import { useExpenseStore } from '@/hooks/useExpenseStore';
+import { Expense, useExpenseStore } from '@/hooks/useExpenseStore';
 import { formatCurrency } from '@/lib/formatters';
 import { FloatingExpenseButton } from '@/components/FloatingExpenseButton';
+import { EditExpenseModal } from '@/components/EditExpenseModal'; // Asegúrate de tener este componente
 
 const Index = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -20,6 +21,9 @@ const Index = () => {
 
   const currentMonth = new Date().getMonth() === selectedMonth.getMonth() &&
     new Date().getFullYear() === selectedMonth.getFullYear();
+
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const { updateExpense } = useExpenseStore(); // Asegúrate de haber agregado `updateExpense` al store
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -54,7 +58,6 @@ const Index = () => {
                 <p className="text-blue-100 text-sm">
                   {currentMonth ? 'Mes actual' : selectedMonth.toLocaleDateString('es', { month: 'long', year: 'numeric' })}
                 </p>
-                {/* <ExpenseChart expenses={monthlyExpenses} /> */}
               </CardContent>
             </Card>
           </Link>
@@ -89,8 +92,16 @@ const Index = () => {
                         <span>{new Date(expense.date).toLocaleDateString('es')}</span>
                       </div>
                     </div>
-                    <div className="text-lg font-semibold text-gray-900">
-                      {formatCurrency(expense.amount)}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setEditingExpense(expense)}
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        Editar
+                      </button>
+                      <div className="text-lg font-semibold text-gray-900">
+                        {formatCurrency(expense.amount)}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -114,6 +125,18 @@ const Index = () => {
       </div>
 
       <FloatingExpenseButton />
+
+      {/* Modal de edición */}
+      {editingExpense && (
+        <EditExpenseModal
+          expense={editingExpense}
+          onSave={(updatedData) => {
+            updateExpense(editingExpense.id, updatedData);
+            setEditingExpense(null);
+          }}
+          onClose={() => setEditingExpense(null)}
+        />
+      )}
     </div>
   );
 };
