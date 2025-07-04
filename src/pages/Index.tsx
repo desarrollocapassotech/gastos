@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Plus, TrendingUp, Calendar, PieChart, DollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
 import { ExpenseForm } from '@/components/ExpenseForm';
 import { ExpenseChart } from '@/components/ExpenseChart';
 import { CategoryList } from '@/components/CategoryList';
@@ -71,18 +71,20 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Calendar size={16} />
-                Gastos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{monthlyExpenses.length}</div>
-              <p className="text-purple-100 text-sm">Registros este mes</p>
-            </CardContent>
-          </Card>
+          <Link to="/projected">
+            <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white cursor-pointer hover:from-purple-600 hover:to-purple-700 transition-all">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Calendar size={16} />
+                  Gastos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{monthlyExpenses.length}</div>
+                <p className="text-purple-100 text-sm">Registros este mes</p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Chart and Categories */}
