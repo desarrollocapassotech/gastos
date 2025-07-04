@@ -40,11 +40,11 @@ export const useExpenseStore = () => {
   useEffect(() => {
     const savedExpenses = localStorage.getItem('expenses');
     const savedCategories = localStorage.getItem('categories');
-    
+
     if (savedExpenses) {
       setExpenses(JSON.parse(savedExpenses));
     }
-    
+
     if (savedCategories) {
       setCategories(JSON.parse(savedCategories));
     }
@@ -52,7 +52,32 @@ export const useExpenseStore = () => {
 
   // Save to localStorage whenever expenses change
   useEffect(() => {
-    localStorage.setItem('expenses', JSON.stringify(expenses));
+    try {
+      if (!expenses || !Array.isArray(expenses)) {
+        console.error("Expenses is not an array or is undefined");
+        return;
+      }
+      // Ensure expenses is an array before saving
+      if (expenses.length === 0) {
+        console.warn("No expenses to save");
+      }
+      // Convert to JSON and save
+      if (expenses.some(expense => typeof expense !== 'object')) {
+        console.error("Expenses contains non-object items");
+        return;
+      }
+      if (expenses.some(expense => !expense.id || !expense.amount || !expense.category || !expense.description || !expense.date)) {
+        console.error("Expenses contains incomplete items");
+        return;
+      }
+      // Save to localStorage
+      if (expenses.length > 0) {
+        console.log("Saving expenses to localStorage", expenses);
+        localStorage.setItem('expenses', JSON.stringify(expenses));
+      }
+    } catch (e) {
+      console.error("No se pudo guardar en localStorage", e);
+    }
   }, [expenses]);
 
   // Save to localStorage whenever categories change
@@ -65,7 +90,7 @@ export const useExpenseStore = () => {
       ...expenseData,
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
     };
-    
+
     setExpenses(prev => [newExpense, ...prev]);
   };
 
@@ -82,7 +107,7 @@ export const useExpenseStore = () => {
     for (let i = 0; i < installments; i++) {
       const installmentDate = new Date(startDate);
       installmentDate.setMonth(installmentDate.getMonth() + i);
-      
+
       const expense: Expense = {
         id: Date.now().toString() + i + Math.random().toString(36).substr(2, 9),
         amount: monthlyAmount,
@@ -95,10 +120,10 @@ export const useExpenseStore = () => {
           originalAmount: amount,
         },
       };
-      
+
       newExpenses.push(expense);
     }
-    
+
     setExpenses(prev => [...newExpenses, ...prev]);
   };
 
@@ -120,7 +145,7 @@ export const useExpenseStore = () => {
   const getExpensesForMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
-    
+
     return expenses.filter(expense => {
       const expenseDate = new Date(expense.date);
       return expenseDate.getFullYear() === year && expenseDate.getMonth() === month;
@@ -149,7 +174,7 @@ export const useExpenseStore = () => {
 
   const getProjectedExpenses = () => {
     const monthlyTotals: Record<string, number> = {};
-    
+
     expenses.forEach(expense => {
       const monthKey = expense.date.substring(0, 7); // YYYY-MM
       monthlyTotals[monthKey] = (monthlyTotals[monthKey] || 0) + expense.amount;

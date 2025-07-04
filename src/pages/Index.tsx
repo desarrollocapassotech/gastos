@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, TrendingUp, Calendar, PieChart, DollarSign } from 'lucide-react';
+import { useState } from 'react';
+import { TrendingUp, Calendar, PieChart, DollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { ExpenseChart } from '@/components/ExpenseChart';
@@ -10,19 +9,17 @@ import { MonthNavigator } from '@/components/MonthNavigator';
 import { useExpenseStore } from '@/hooks/useExpenseStore';
 import { formatCurrency } from '@/lib/formatters';
 import { FloatingExpenseButton } from '@/components/FloatingExpenseButton';
-import { ExpenseForm } from '@/components/ExpenseForm';
 
 const Index = () => {
-  const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const { expenses, getExpensesForMonth, getTotalForMonth, getCategoriesWithTotals } = useExpenseStore();
+  const { getExpensesForMonth, getTotalForMonth, getCategoriesWithTotals } = useExpenseStore();
 
   const monthlyExpenses = getExpensesForMonth(selectedMonth);
   const monthlyTotal = getTotalForMonth(selectedMonth);
   const categoriesWithTotals = getCategoriesWithTotals(selectedMonth);
 
-  const currentMonth = new Date().getMonth() === selectedMonth.getMonth() && 
-                      new Date().getFullYear() === selectedMonth.getFullYear();
+  const currentMonth = new Date().getMonth() === selectedMonth.getMonth() &&
+    new Date().getFullYear() === selectedMonth.getFullYear();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -37,78 +34,38 @@ const Index = () => {
         </div>
 
         {/* Month Navigator */}
-        <MonthNavigator 
+        <MonthNavigator
           selectedMonth={selectedMonth}
           onMonthChange={setSelectedMonth}
         />
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp size={16} />
-                Total del Mes
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(monthlyTotal)}</div>
-              <p className="text-blue-100 text-sm">
-                {currentMonth ? 'Mes actual' : selectedMonth.toLocaleDateString('es', { month: 'long', year: 'numeric' })}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <PieChart size={16} />
-                Categorías
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{categoriesWithTotals.length}</div>
-              <p className="text-green-100 text-sm">Con gastos registrados</p>
-            </CardContent>
-          </Card>
-
+        {/* Summary Cards & Categories */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link to="/projected">
-            <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white cursor-pointer hover:from-purple-600 hover:to-purple-700 transition-all">
+            <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Calendar size={16} />
-                  Gastos
+                  <TrendingUp size={16} />
+                  Total del Mes
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{monthlyExpenses.length}</div>
-                <p className="text-purple-100 text-sm">Registros este mes</p>
+                <div className="text-2xl font-bold">{formatCurrency(monthlyTotal)}</div>
+                <p className="text-blue-100 text-sm">
+                  {currentMonth ? 'Mes actual' : selectedMonth.toLocaleDateString('es', { month: 'long', year: 'numeric' })}
+                </p>
+                {/* <ExpenseChart expenses={monthlyExpenses} /> */}
               </CardContent>
             </Card>
           </Link>
-        </div>
-
-        {/* Chart and Categories */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <PieChart className="text-blue-600" size={20} />
-                Gastos por Categoría
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ExpenseChart expenses={monthlyExpenses} />
-            </CardContent>
-          </Card>
 
           <Card>
             <CardHeader>
               <CardTitle>Categorías</CardTitle>
             </CardHeader>
             <CardContent>
-              <CategoryList 
-                categories={categoriesWithTotals} 
+              <CategoryList
+                categories={categoriesWithTotals}
                 selectedMonth={selectedMonth}
               />
             </CardContent>
@@ -119,7 +76,7 @@ const Index = () => {
         {monthlyExpenses.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Gastos Recientes</CardTitle>
+              <CardTitle>Gastos Recientes ({monthlyExpenses.length})</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -155,7 +112,7 @@ const Index = () => {
           </Card>
         )}
       </div>
-      
+
       <FloatingExpenseButton />
     </div>
   );
