@@ -22,14 +22,18 @@ export interface Category {
 }
 
 const DEFAULT_CATEGORIES: Category[] = [
-  { id: '1', name: 'Alimentación', color: '#10B981', icon: '🍽️' },
-  { id: '2', name: 'Transporte', color: '#3B82F6', icon: '🚗' },
-  { id: '3', name: 'Salud', color: '#EF4444', icon: '🏥' },
-  { id: '4', name: 'Entretenimiento', color: '#8B5CF6', icon: '🎬' },
+  { id: '1', name: 'Casa', color: '#EC4899', icon: '🏠' },
+  { id: '2', name: 'Comida', color: '#10B981', icon: '🍽️' },
+  { id: '3', name: 'Transporte', color: '#3B82F6', icon: '🚗' },
+  { id: '4', name: 'Salidas', color: 'green', icon: '🍷' },
   { id: '5', name: 'Servicios', color: '#F59E0B', icon: '💡' },
-  { id: '6', name: 'Compras', color: '#EC4899', icon: '🛍️' },
-  { id: '7', name: 'Educación', color: '#6366F1', icon: '📚' },
-  { id: '8', name: 'Otros', color: '#64748B', icon: '📦' },
+  { id: '6', name: 'Salud', color: '#EF4444', icon: '🏥' },
+  { id: '7', name: 'Entrenamiento', color: '#8B5CF6', icon: '💪🏼' },
+  { id: '8', name: 'Educación', color: '#6366F1', icon: '📚' },
+  { id: '9', name: 'Regalos', color: 'pink', icon: '🎁' },
+  { id: '10', name: 'Impuestos', color: 'black', icon: '🎁' },
+  { id: '11', name: 'Trabajo', color: 'blue', icon: '💻' },
+  { id: '12', name: 'Otros', color: '#64748B', icon: '📦' },
 ];
 
 export const useExpenseStore = () => {
