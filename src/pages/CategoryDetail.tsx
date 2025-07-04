@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ArrowLeft, Calendar, DollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useExpenseStore } from '@/hooks/useExpenseStore';
 import { formatCurrency } from '@/lib/formatters';
+import { FloatingExpenseButton } from '@/components/FloatingExpenseButton';
 
 const CategoryDetail = () => {
   const { category } = useParams<{ category: string }>();
@@ -137,6 +137,8 @@ const CategoryDetail = () => {
           </CardContent>
         </Card>
       </div>
+      
+      <FloatingExpenseButton />
     </div>
   );
 };

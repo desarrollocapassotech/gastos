@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ArrowLeft, Calendar, DollarSign, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +6,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useExpenseStore } from '@/hooks/useExpenseStore';
 import { formatCurrency, formatMonth } from '@/lib/formatters';
 import { CategoryList } from '@/components/CategoryList';
+import { FloatingExpenseButton } from '@/components/FloatingExpenseButton';
 
 const MonthDetail = () => {
   const { year, month } = useParams<{ year: string; month: string }>();
@@ -88,6 +88,8 @@ const MonthDetail = () => {
           </CardContent>
         </Card>
       </div>
+      
+      <FloatingExpenseButton />
     </div>
   );
 };

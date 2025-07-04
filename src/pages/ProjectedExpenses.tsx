@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useExpenseStore } from '@/hooks/useExpenseStore';
 import { formatCurrency, formatMonth } from '@/lib/formatters';
 import { Link } from 'react-router-dom';
+import { FloatingExpenseButton } from '@/components/FloatingExpenseButton';
 
 const ProjectedExpenses = () => {
   const { getProjectedExpenses, getTotalForMonth } = useExpenseStore();
@@ -158,6 +159,8 @@ const ProjectedExpenses = () => {
           </CardContent>
         </Card>
       </div>
+      
+      <FloatingExpenseButton />
     </div>
   );
 };

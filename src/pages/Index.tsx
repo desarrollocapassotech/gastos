@@ -4,12 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
-import { ExpenseForm } from '@/components/ExpenseForm';
 import { ExpenseChart } from '@/components/ExpenseChart';
 import { CategoryList } from '@/components/CategoryList';
 import { MonthNavigator } from '@/components/MonthNavigator';
 import { useExpenseStore } from '@/hooks/useExpenseStore';
 import { formatCurrency } from '@/lib/formatters';
+import { FloatingExpenseButton } from '@/components/FloatingExpenseButton';
+import { ExpenseForm } from '@/components/ExpenseForm';
 
 const Index = () => {
   const [showExpenseForm, setShowExpenseForm] = useState(false);
@@ -153,22 +154,9 @@ const Index = () => {
             </CardContent>
           </Card>
         )}
-
-        {/* Floating Action Button */}
-        <Button 
-          onClick={() => setShowExpenseForm(true)}
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 z-50"
-          size="icon"
-        >
-          <Plus size={24} />
-        </Button>
-
-        {/* Expense Form Modal */}
-        <ExpenseForm 
-          open={showExpenseForm}
-          onClose={() => setShowExpenseForm(false)}
-        />
       </div>
+      
+      <FloatingExpenseButton />
     </div>
   );
 };
