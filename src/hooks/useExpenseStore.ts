@@ -1,5 +1,15 @@
 
 import { useState, useEffect } from 'react';
+import { db } from '@/firebase';
+import {
+  collection,
+  collectionGroup,
+  doc,
+  getDocs,
+  setDoc,
+  deleteDoc,
+  updateDoc,
+} from 'firebase/firestore';
 
 export interface Expense {
   id: string;
@@ -40,73 +50,91 @@ export const useExpenseStore = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
 
-  // Load data from localStorage on mount
+  // Load data from Firestore on mount
   useEffect(() => {
-    const savedExpenses = localStorage.getItem('expenses');
-    const savedCategories = localStorage.getItem('categories');
+    const loadData = async () => {
+      try {
+        // Load categories
+        const catSnapshot = await getDocs(collection(db, 'categories'));
+        if (catSnapshot.empty) {
+          for (const cat of DEFAULT_CATEGORIES) {
+            await setDoc(doc(collection(db, 'categories'), cat.id), cat);
+          }
+          setCategories(DEFAULT_CATEGORIES);
+        } else {
+          const loadedCats = catSnapshot.docs.map(
+            (d) => d.data() as Category
+          );
+          setCategories(loadedCats);
+        }
+      } catch (e) {
+        console.error('Error loading categories', e);
+      }
 
-    if (savedExpenses) {
-      setExpenses(JSON.parse(savedExpenses));
-    }
-
-    if (savedCategories) {
-      setCategories(JSON.parse(savedCategories));
-    }
+      try {
+        // Load expenses across all months
+        const expenseSnapshot = await getDocs(collectionGroup(db, 'expenses'));
+        const loadedExpenses = expenseSnapshot.docs.map(
+          (d) => d.data() as Expense
+        );
+        setExpenses(loadedExpenses);
+      } catch (e) {
+        console.error('Error loading expenses', e);
+      }
+    };
+    loadData();
   }, []);
 
-  // Save to localStorage whenever expenses change
-  useEffect(() => {
-    try {
-      if (!expenses || !Array.isArray(expenses)) {
-        console.error("Expenses is not an array or is undefined");
-        return;
-      }
-      // Ensure expenses is an array before saving
-      if (expenses.length === 0) {
-        console.warn("No expenses to save");
-      }
-      // Convert to JSON and save
-      if (expenses.some(expense => typeof expense !== 'object')) {
-        console.error("Expenses contains non-object items");
-        return;
-      }
-      if (expenses.some(expense => !expense.id || !expense.amount || !expense.category || !expense.description || !expense.date)) {
-        console.error("Expenses contains incomplete items");
-        return;
-      }
-      // Save to localStorage
-      if (expenses.length > 0) {
-        console.log("Saving expenses to localStorage", expenses);
-        localStorage.setItem('expenses', JSON.stringify(expenses));
-      }
-    } catch (e) {
-      console.error("No se pudo guardar en localStorage", e);
-    }
-  }, [expenses]);
-
-  // Save to localStorage whenever categories change
-  useEffect(() => {
-    localStorage.setItem('categories', JSON.stringify(categories));
-  }, [categories]);
-
-  const addExpense = (expenseData: Omit<Expense, 'id'>) => {
+  const addExpense = async (expenseData: Omit<Expense, 'id'>) => {
     const newExpense: Expense = {
       ...expenseData,
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
     };
-
-    setExpenses(prev => [newExpense, ...prev]);
+    const monthKey = newExpense.date.substring(0, 7);
+    try {
+      await setDoc(
+        doc(db, 'months', monthKey, 'expenses', newExpense.id),
+        newExpense
+      );
+      setExpenses((prev) => [newExpense, ...prev]);
+    } catch (e) {
+      console.error('Error adding expense', e);
+    }
   };
 
-  const updateExpense = (id: string, updatedData: Partial<Omit<Expense, 'id'>>) => {
-    setExpenses(prev =>
-      prev.map(expense =>
-        expense.id === id ? { ...expense, ...updatedData } : expense
-      )
-    );
+  const updateExpense = async (
+    id: string,
+    updatedData: Partial<Omit<Expense, 'id'>>
+  ) => {
+    const oldExpense = expenses.find((e) => e.id === id);
+    if (!oldExpense) return;
+    const updatedExpense: Expense = { ...oldExpense, ...updatedData };
+    const oldMonth = oldExpense.date.substring(0, 7);
+    const newMonth = updatedExpense.date.substring(0, 7);
+    try {
+      if (oldMonth !== newMonth) {
+        await deleteDoc(doc(db, 'months', oldMonth, 'expenses', id));
+        await setDoc(
+          doc(db, 'months', newMonth, 'expenses', id),
+          updatedExpense
+        );
+      } else {
+        await updateDoc(
+          doc(db, 'months', oldMonth, 'expenses', id),
+          updatedData as Record<string, unknown>
+        );
+      }
+      setExpenses((prev) =>
+        prev.map((expense) =>
+          expense.id === id ? updatedExpense : expense
+        )
+      );
+    } catch (e) {
+      console.error('Error updating expense', e);
+    }
   };
 
-  const addInstallmentExpense = (
+  const addInstallmentExpense = async (
     amount: number,
     category: string,
     description: string,
@@ -133,24 +161,50 @@ export const useExpenseStore = () => {
         },
       };
 
-      newExpenses.push(expense);
+        newExpenses.push(expense);
+        const monthKey = expense.date.substring(0, 7);
+        try {
+          await setDoc(
+            doc(db, 'months', monthKey, 'expenses', expense.id),
+            expense
+          );
+        } catch (e) {
+          console.error('Error adding installment expense', e);
+        }
+      }
+
+      setExpenses((prev) => [...newExpenses, ...prev]);
+  };
+
+  const deleteExpense = async (id: string) => {
+    const expense = expenses.find((e) => e.id === id);
+    if (!expense) return;
+    const monthKey = expense.date.substring(0, 7);
+    try {
+      await deleteDoc(doc(db, 'months', monthKey, 'expenses', id));
+      setExpenses((prev) => prev.filter((e) => e.id !== id));
+    } catch (e) {
+      console.error('Error deleting expense', e);
     }
-
-    setExpenses(prev => [...newExpenses, ...prev]);
   };
 
-  const deleteExpense = (id: string) => {
-    setExpenses(prev => prev.filter(expense => expense.id !== id));
-  };
-
-  const addCategory = (name: string, color: string, icon: string) => {
+  const addCategory = async (
+    name: string,
+    color: string,
+    icon: string
+  ) => {
     const newCategory: Category = {
       id: Date.now().toString(),
       name,
       color,
       icon,
     };
-    setCategories(prev => [...prev, newCategory]);
+    try {
+      await setDoc(doc(db, 'categories', newCategory.id), newCategory);
+      setCategories((prev) => [...prev, newCategory]);
+    } catch (e) {
+      console.error('Error adding category', e);
+    }
     return newCategory;
   };
 
