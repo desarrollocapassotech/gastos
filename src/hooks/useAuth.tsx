@@ -2,13 +2,13 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { auth, db } from '@/firebase';
 import {
   GoogleAuthProvider,
-  RecaptchaVerifier,
   User,
   onAuthStateChanged,
   signInWithPhoneNumber,
   signInWithPopup,
   signOut,
   ConfirmationResult,
+  ApplicationVerifier,
 } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 
@@ -26,7 +26,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signInWithPhone: (
     phone: string,
-    appVerifier: RecaptchaVerifier
+    appVerifier: ApplicationVerifier
   ) => Promise<ConfirmationResult>;
   signOutUser: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -76,7 +76,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await signInWithPopup(auth, provider);
   };
 
-  const signInWithPhone = (phone: string, appVerifier: RecaptchaVerifier) => {
+  const signInWithPhone = (
+    phone: string,
+    appVerifier: ApplicationVerifier
+  ) => {
     return signInWithPhoneNumber(auth, phone, appVerifier);
   };
 
