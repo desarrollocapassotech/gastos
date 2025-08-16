@@ -48,11 +48,11 @@ const Login = () => {
   const handleSendCode = async () => {
     if (!verifier.current) {
       verifier.current = new RecaptchaVerifier(
+        auth,
         'recaptcha-container',
         {
           size: 'invisible',
-        },
-        auth
+        }
       );
     }
     const formatted = phone.startsWith('+') ? phone : `+${phone}`;
