@@ -8,6 +8,7 @@ import ProjectedExpenses from "./pages/ProjectedExpenses";
 import MonthDetail from "./pages/MonthDetail";
 import CategoryDetail from "./pages/CategoryDetail";
 import NotFound from "./pages/NotFound";
+import Layout from "@/components/Layout";
 
 const queryClient = new QueryClient();
 
@@ -18,12 +19,14 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/projected" element={<ProjectedExpenses />} />
-          <Route path="/month/:year/:month" element={<MonthDetail />} />
-          <Route path="/category/:category" element={<CategoryDetail />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
+          <Route element={<Layout />}>
+            <Route path="/" element={<Index />} />
+            <Route path="/projected" element={<ProjectedExpenses />} />
+            <Route path="/month/:year/:month" element={<MonthDetail />} />
+            <Route path="/category/:category" element={<CategoryDetail />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
