@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 export function SideMenu() {
   const [open, setOpen] = useState(false);
@@ -19,11 +20,22 @@ export function SideMenu() {
         <span className="sr-only">{open ? "Cerrar" : "Abrir"} menú</span>
       </Button>
       <SheetContent side="left" className="w-64">
+        <VisuallyHidden>
+          <SheetTitle>Menú de navegación</SheetTitle>
+        </VisuallyHidden>
         <nav className="mt-8 flex flex-col gap-4">
-          <Link to="/" className="text-lg font-medium">
+          <Link
+            to="/"
+            className="text-lg font-medium"
+            onClick={() => setOpen(false)}
+          >
             Inicio
           </Link>
-          <Link to="/projected" className="text-lg font-medium">
+          <Link
+            to="/projected"
+            className="text-lg font-medium"
+            onClick={() => setOpen(false)}
+          >
             Gastos proyectados
           </Link>
         </nav>
