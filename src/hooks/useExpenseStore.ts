@@ -1,6 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { db } from '@/firebase';
+import { useAuth } from '@/hooks/useAuth';
 import {
   collection,
   collectionGroup,
@@ -9,10 +9,13 @@ import {
   setDoc,
   deleteDoc,
   updateDoc,
+  query,
+  where,
 } from 'firebase/firestore';
 
 export interface Expense {
   id: string;
+  userId: string;
   amount: number;
   category: string;
   description: string;
@@ -49,22 +52,28 @@ const DEFAULT_CATEGORIES: Category[] = [
 export const useExpenseStore = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
+  const { user } = useAuth();
 
-  // Load data from Firestore on mount
+  // Load data from Firestore when user changes
   useEffect(() => {
+    if (!user) {
+      setExpenses([]);
+      setCategories(DEFAULT_CATEGORIES);
+      return;
+    }
+
     const loadData = async () => {
       try {
         // Load categories
-        const catSnapshot = await getDocs(collection(db, 'categories'));
+        const catCol = collection(db, 'users', user.uid, 'categories');
+        const catSnapshot = await getDocs(catCol);
         if (catSnapshot.empty) {
           for (const cat of DEFAULT_CATEGORIES) {
-            await setDoc(doc(collection(db, 'categories'), cat.id), cat);
+            await setDoc(doc(catCol, cat.id), cat);
           }
           setCategories(DEFAULT_CATEGORIES);
         } else {
-          const loadedCats = catSnapshot.docs.map(
-            (d) => d.data() as Category
-          );
+          const loadedCats = catSnapshot.docs.map((d) => d.data() as Category);
           setCategories(loadedCats);
         }
       } catch (e) {
@@ -72,8 +81,12 @@ export const useExpenseStore = () => {
       }
 
       try {
-        // Load expenses across all months
-        const expenseSnapshot = await getDocs(collectionGroup(db, 'expenses'));
+        // Load expenses for user
+        const q = query(
+          collectionGroup(db, 'expenses'),
+          where('userId', '==', user.uid)
+        );
+        const expenseSnapshot = await getDocs(q);
         const loadedExpenses = expenseSnapshot.docs.map(
           (d) => d.data() as Expense
         );
@@ -83,17 +96,21 @@ export const useExpenseStore = () => {
       }
     };
     loadData();
-  }, []);
+  }, [user]);
 
-  const addExpense = async (expenseData: Omit<Expense, 'id'>) => {
+  const addExpense = async (
+    expenseData: Omit<Expense, 'id' | 'userId'>
+  ) => {
+    if (!user) return;
     const newExpense: Expense = {
       ...expenseData,
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      userId: user.uid,
     };
     const monthKey = newExpense.date.substring(0, 7);
     try {
       await setDoc(
-        doc(db, 'months', monthKey, 'expenses', newExpense.id),
+        doc(db, 'users', user.uid, 'months', monthKey, 'expenses', newExpense.id),
         newExpense
       );
       setExpenses((prev) => [newExpense, ...prev]);
@@ -104,30 +121,33 @@ export const useExpenseStore = () => {
 
   const updateExpense = async (
     id: string,
-    updatedData: Partial<Omit<Expense, 'id'>>
+    updatedData: Partial<Omit<Expense, 'id' | 'userId'>>
   ) => {
-    const oldExpense = expenses.find((e) => e.id === id);
+    if (!user) return;
+    const oldExpense = expenses.find(
+      (e) => e.id === id && e.userId === user.uid
+    );
     if (!oldExpense) return;
     const updatedExpense: Expense = { ...oldExpense, ...updatedData };
     const oldMonth = oldExpense.date.substring(0, 7);
     const newMonth = updatedExpense.date.substring(0, 7);
     try {
       if (oldMonth !== newMonth) {
-        await deleteDoc(doc(db, 'months', oldMonth, 'expenses', id));
+        await deleteDoc(
+          doc(db, 'users', user.uid, 'months', oldMonth, 'expenses', id)
+        );
         await setDoc(
-          doc(db, 'months', newMonth, 'expenses', id),
+          doc(db, 'users', user.uid, 'months', newMonth, 'expenses', id),
           updatedExpense
         );
       } else {
         await updateDoc(
-          doc(db, 'months', oldMonth, 'expenses', id),
+          doc(db, 'users', user.uid, 'months', oldMonth, 'expenses', id),
           updatedData as Record<string, unknown>
         );
       }
       setExpenses((prev) =>
-        prev.map((expense) =>
-          expense.id === id ? updatedExpense : expense
-        )
+        prev.map((expense) => (expense.id === id ? updatedExpense : expense))
       );
     } catch (e) {
       console.error('Error updating expense', e);
@@ -141,6 +161,7 @@ export const useExpenseStore = () => {
     installments: number,
     startDate: Date = new Date()
   ) => {
+    if (!user) return;
     const monthlyAmount = amount / installments;
     const newExpenses: Expense[] = [];
 
@@ -154,6 +175,7 @@ export const useExpenseStore = () => {
         category,
         description: `${description} (Cuota ${i + 1}/${installments})`,
         date: installmentDate.toISOString().split('T')[0],
+        userId: user.uid,
         installments: {
           total: installments,
           current: i + 1,
@@ -161,27 +183,32 @@ export const useExpenseStore = () => {
         },
       };
 
-        newExpenses.push(expense);
-        const monthKey = expense.date.substring(0, 7);
-        try {
-          await setDoc(
-            doc(db, 'months', monthKey, 'expenses', expense.id),
-            expense
-          );
-        } catch (e) {
-          console.error('Error adding installment expense', e);
-        }
+      newExpenses.push(expense);
+      const monthKey = expense.date.substring(0, 7);
+      try {
+        await setDoc(
+          doc(db, 'users', user.uid, 'months', monthKey, 'expenses', expense.id),
+          expense
+        );
+      } catch (e) {
+        console.error('Error adding installment expense', e);
       }
+    }
 
-      setExpenses((prev) => [...newExpenses, ...prev]);
+    setExpenses((prev) => [...newExpenses, ...prev]);
   };
 
   const deleteExpense = async (id: string) => {
-    const expense = expenses.find((e) => e.id === id);
+    if (!user) return;
+    const expense = expenses.find(
+      (e) => e.id === id && e.userId === user.uid
+    );
     if (!expense) return;
     const monthKey = expense.date.substring(0, 7);
     try {
-      await deleteDoc(doc(db, 'months', monthKey, 'expenses', id));
+      await deleteDoc(
+        doc(db, 'users', user.uid, 'months', monthKey, 'expenses', id)
+      );
       setExpenses((prev) => prev.filter((e) => e.id !== id));
     } catch (e) {
       console.error('Error deleting expense', e);
@@ -193,6 +220,7 @@ export const useExpenseStore = () => {
     color: string,
     icon: string
   ) => {
+    if (!user) return null;
     const newCategory: Category = {
       id: Date.now().toString(),
       name,
@@ -200,7 +228,10 @@ export const useExpenseStore = () => {
       icon,
     };
     try {
-      await setDoc(doc(db, 'categories', newCategory.id), newCategory);
+      await setDoc(
+        doc(db, 'users', user.uid, 'categories', newCategory.id),
+        newCategory
+      );
       setCategories((prev) => [...prev, newCategory]);
     } catch (e) {
       console.error('Error adding category', e);
@@ -212,14 +243,20 @@ export const useExpenseStore = () => {
     const year = date.getFullYear();
     const month = date.getMonth();
 
-    return expenses.filter(expense => {
+    return expenses.filter((expense) => {
       const expenseDate = new Date(expense.date);
-      return expenseDate.getFullYear() === year && expenseDate.getMonth() === month;
+      return (
+        expenseDate.getFullYear() === year &&
+        expenseDate.getMonth() === month
+      );
     });
   };
 
   const getTotalForMonth = (date: Date) => {
-    return getExpensesForMonth(date).reduce((total, expense) => total + expense.amount, 0);
+    return getExpensesForMonth(date).reduce(
+      (total, expense) => total + expense.amount,
+      0
+    );
   };
 
   const getCategoriesWithTotals = (date: Date) => {
@@ -230,8 +267,8 @@ export const useExpenseStore = () => {
     }, {} as Record<string, number>);
 
     return categories
-      .filter(category => categoryTotals[category.name] > 0)
-      .map(category => ({
+      .filter((category) => categoryTotals[category.name] > 0)
+      .map((category) => ({
         ...category,
         total: categoryTotals[category.name] || 0,
       }))
@@ -241,9 +278,10 @@ export const useExpenseStore = () => {
   const getProjectedExpenses = () => {
     const monthlyTotals: Record<string, number> = {};
 
-    expenses.forEach(expense => {
+    expenses.forEach((expense) => {
       const monthKey = expense.date.substring(0, 7); // YYYY-MM
-      monthlyTotals[monthKey] = (monthlyTotals[monthKey] || 0) + expense.amount;
+      monthlyTotals[monthKey] =
+        (monthlyTotals[monthKey] || 0) + expense.amount;
     });
 
     return monthlyTotals;
@@ -263,3 +301,4 @@ export const useExpenseStore = () => {
     getProjectedExpenses,
   };
 };
+
