@@ -3,12 +3,11 @@ import { auth, db } from '@/firebase';
 import {
   GoogleAuthProvider,
   User,
+  UserCredential,
   onAuthStateChanged,
-  signInWithPhoneNumber,
+  signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
-  ConfirmationResult,
-  ApplicationVerifier,
 } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 
@@ -24,10 +23,7 @@ interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
-  signInWithPhone: (
-    phone: string,
-    appVerifier: ApplicationVerifier
-  ) => Promise<ConfirmationResult>;
+  signInWithEmail: (email: string, password: string) => Promise<UserCredential>;
   signOutUser: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -37,9 +33,10 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   loading: true,
   signInWithGoogle: async () => {},
-  signInWithPhone: async () => {
-    throw new Error('signInWithPhone not implemented');
-  },
+  signInWithEmail: () =>
+    Promise.reject<UserCredential>(
+      new Error('signInWithEmail not implemented')
+    ),
   signOutUser: async () => {},
   refreshProfile: async () => {},
 });
@@ -76,11 +73,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await signInWithPopup(auth, provider);
   };
 
-  const signInWithPhone = (
-    phone: string,
-    appVerifier: ApplicationVerifier
-  ) => {
-    return signInWithPhoneNumber(auth, phone, appVerifier);
+  const signInWithEmail = (email: string, password: string) => {
+    return signInWithEmailAndPassword(auth, email, password);
   };
 
   const signOutUser = () => signOut(auth);
@@ -98,7 +92,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         profile,
         loading,
         signInWithGoogle,
-        signInWithPhone,
+        signInWithEmail,
         signOutUser,
         refreshProfile,
       }}

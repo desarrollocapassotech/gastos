@@ -1,11 +1,8 @@
-import { useEffect, useRef, useState, type SVGProps } from 'react';
+import { useEffect, useState, type SVGProps, type FormEvent } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { auth } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
-import { RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
-import { Phone } from 'lucide-react';
 
 const GoogleIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
@@ -29,12 +26,11 @@ const GoogleIcon = (props: SVGProps<SVGSVGElement>) => (
 );
 
 const Login = () => {
-  const { signInWithGoogle, signInWithPhone, user, profile } = useAuth();
+  const { signInWithGoogle, signInWithEmail, user, profile } = useAuth();
   const navigate = useNavigate();
-  const [phone, setPhone] = useState('');
-  const [code, setCode] = useState('');
-  const [confirmation, setConfirmation] = useState<ConfirmationResult | null>(null);
-  const verifier = useRef<RecaptchaVerifier | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && profile) navigate('/');
@@ -45,24 +41,15 @@ const Login = () => {
     await signInWithGoogle();
   };
 
-  const handleSendCode = async () => {
-    if (!verifier.current) {
-      verifier.current = new RecaptchaVerifier(
-        auth,
-        'recaptcha-container',
-        {
-          size: 'invisible',
-        }
-      );
+  const handleEmailLogin = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    try {
+      await signInWithEmail(email, password);
+    } catch (err) {
+      console.error(err);
+      setError('No pudimos iniciar sesión con esas credenciales.');
     }
-    const formatted = phone.startsWith('+') ? phone : `+${phone}`;
-    const result = await signInWithPhone(formatted, verifier.current);
-    setConfirmation(result);
-  };
-
-  const handleVerifyCode = async () => {
-    if (!confirmation) return;
-    await confirmation.confirm(code);
   };
 
   return (
@@ -76,26 +63,26 @@ const Login = () => {
           <span>o</span>
           <div className="flex-1 border-t" />
         </div>
-        <Input
-          placeholder="Número de teléfono"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
-        {confirmation && (
+        <form className="space-y-3" onSubmit={handleEmailLogin}>
           <Input
-            placeholder="Código"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
+            type="email"
+            placeholder="Correo electrónico"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
-        )}
-        <Button
-          onClick={confirmation ? handleVerifyCode : handleSendCode}
-          className="w-full"
-        >
-          <Phone className="mr-2 h-4 w-4" />
-          {confirmation ? 'Verificar Código' : 'Enviar Código'}
-        </Button>
-        <div id="recaptcha-container" />
+          <Input
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          <Button type="submit" className="w-full">
+            Ingresar con email y contraseña
+          </Button>
+        </form>
       </div>
     </div>
   );
