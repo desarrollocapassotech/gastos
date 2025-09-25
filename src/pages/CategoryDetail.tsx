@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Calendar, DollarSign } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useParams, Link, useNavigate } from "react-router-dom";
@@ -15,6 +14,7 @@ const CategoryDetail = () => {
   const { expenses, categories, updateExpense } = useExpenseStore();
 
   const selectedMonth = new Date();
+  const monthText = selectedMonth.toLocaleDateString("es", { month: "long", year: "numeric" });
 
   const categoryInfo = categories.find((cat) => cat.name === category);
   const categoryExpenses = expenses.filter(
@@ -25,120 +25,140 @@ const CategoryDetail = () => {
   );
 
   const totalAmount = categoryExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const expensesCount = categoryExpenses.length;
+  const averageExpense = expensesCount > 0 ? totalAmount / expensesCount : 0;
+  const lastExpenseDate = categoryExpenses.reduce<Date | null>((latest, expense) => {
+    const expenseDate = new Date(expense.date);
+    if (!latest || expenseDate.getTime() > latest.getTime()) {
+      return expenseDate;
+    }
+    return latest;
+  }, null);
 
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   if (!categoryInfo) {
     return (
-      <div className="space-y-6 pb-14">
-        <Card className="border border-blue-100 bg-white/90 py-12 text-center shadow-sm backdrop-blur">
-          <CardContent className="space-y-3">
-            <h2 className="text-xl font-semibold text-slate-900">Categoría no encontrada</h2>
-            <Button onClick={() => navigate("/")}>Volver al inicio</Button>
-          </CardContent>
-        </Card>
+      <div className="space-y-6 pb-32 sm:pb-20">
+        <div className="rounded-3xl border border-slate-100 bg-white p-10 text-center shadow-sm">
+          <h2 className="text-2xl font-semibold text-slate-900">Categoría no encontrada</h2>
+          <p className="mt-2 text-sm text-slate-500">Revisa el listado de categorías disponibles e inténtalo nuevamente.</p>
+          <Button onClick={() => navigate("/")} className="mt-6">
+            Volver al inicio
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 pb-14">
-      <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-        <Link to="/" className="inline-flex">
-          <Button variant="outline" size="icon" className="h-10 w-10 rounded-full">
-            <ArrowLeft size={20} />
-          </Button>
-        </Link>
-        <div className="flex items-center gap-3">
-          <span
-            className="flex h-10 w-10 items-center justify-center rounded-full text-lg"
-            style={{ backgroundColor: categoryInfo.color }}
-          >
-            {categoryInfo.icon}
-          </span>
-          <div className="flex flex-col gap-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
-              Gastos por categoría
-            </p>
-            <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">{categoryInfo.name}</h1>
-            <p className="text-sm text-slate-600">
-              Gastos de {selectedMonth.toLocaleDateString("es", { month: "long", year: "numeric" })}
-            </p>
+    <div className="space-y-6 pb-32 sm:pb-20">
+      <section className="space-y-4">
+        <div className="rounded-3xl bg-gradient-to-br from-indigo-500 via-violet-500 to-sky-500 p-5 text-white shadow-xl">
+          <div className="flex items-center justify-between gap-3">
+            <Link
+              to="/"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">Volver al inicio</span>
+            </Link>
+            <span className="rounded-full bg-white/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.35em] text-white">
+              Categoría
+            </span>
+          </div>
+
+          <div className="mt-4 flex items-start gap-3">
+            <span
+              className="flex h-12 w-12 items-center justify-center rounded-2xl text-xl"
+              style={{ backgroundColor: categoryInfo.color }}
+            >
+              {categoryInfo.icon}
+            </span>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/70">Gastos por categoría</p>
+              <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">{categoryInfo.name}</h1>
+              <p className="text-sm capitalize text-white/80">{monthText}</p>
+              <p className="text-xs text-white/70">
+                {expensesCount} {expensesCount === 1 ? "gasto" : "gastos"} registrados este mes
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl bg-white/15 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-white/70">Total del mes</p>
+              <p className="mt-2 text-lg font-semibold text-white">{formatCurrency(totalAmount)}</p>
+            </div>
+            <div className="rounded-2xl bg-white/15 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-white/70">Promedio por gasto</p>
+              <p className="mt-2 text-lg font-semibold text-white">{formatCurrency(averageExpense)}</p>
+            </div>
+            <div className="rounded-2xl bg-white/15 p-4 sm:col-span-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-white/70">Última compra</p>
+              <p className="mt-2 text-lg font-semibold text-white">
+                {lastExpenseDate ? lastExpenseDate.toLocaleDateString("es") : "Sin datos"}
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      <Card className="border-none bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <DollarSign size={16} />
-            Total en {categoryInfo.name}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <p className="text-3xl font-semibold leading-tight">{formatCurrency(totalAmount)}</p>
-          <p className="text-xs uppercase tracking-wide text-blue-100">
-            {categoryExpenses.length} {categoryExpenses.length === 1 ? "gasto" : "gastos"} registrados
-          </p>
-        </CardContent>
-      </Card>
+      <section className="space-y-4">
+        <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-base font-semibold text-slate-900">
+              <Calendar className="h-5 w-5 text-sky-500" /> Detalle de gastos
+            </h2>
+            <span className="text-xs font-medium text-slate-500">
+              {expensesCount} {expensesCount === 1 ? "gasto" : "gastos"}
+            </span>
+          </div>
 
-      <Card className="border border-blue-100 bg-white/90 shadow-sm backdrop-blur">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Calendar className="text-blue-600" size={20} />
-            Detalle de gastos
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
           {categoryExpenses.length === 0 ? (
-            <div className="py-8 text-center text-sm text-slate-500">
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 p-10 text-center text-slate-500">
               <div className="mb-2 text-3xl">{categoryInfo.icon}</div>
               <p>No hay gastos registrados en esta categoría para este mes.</p>
             </div>
           ) : (
-            categoryExpenses
-              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-              .map((expense) => (
-                <div
-                  key={expense.id}
-                  className="flex items-start justify-between gap-3 rounded-xl border border-blue-100 bg-blue-50/40 p-4"
-                >
-                  <div className="flex-1 space-y-1">
-                    <p className="font-medium text-slate-900">{expense.description}</p>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                      <span className="flex items-center gap-1">
-                        <Calendar size={14} />
-                        {new Date(expense.date).toLocaleDateString("es")}
-                      </span>
+            <div className="space-y-3">
+              {categoryExpenses
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .map((expense) => (
+                  <button
+                    key={expense.id}
+                    onClick={() => setEditingExpense(expense)}
+                    className="flex w-full items-start justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50/60 p-4 text-left transition hover:bg-slate-50"
+                  >
+                    <div className="flex-1 space-y-1">
+                      <p className="font-medium text-slate-900">{expense.description}</p>
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                        <span className="flex items-center gap-1">
+                          <Calendar size={14} />
+                          {new Date(expense.date).toLocaleDateString("es")}
+                        </span>
+                        {expense.installments && (
+                          <Badge variant="outline" className="text-xs">
+                            Cuota {expense.installments.current}/{expense.installments.total}
+                          </Badge>
+                        )}
+                      </div>
                       {expense.installments && (
-                        <Badge variant="outline" className="text-xs">
-                          Cuota {expense.installments.current}/{expense.installments.total}
-                        </Badge>
+                        <p className="text-xs text-slate-400">
+                          Total original: {formatCurrency(expense.installments.originalAmount)}
+                        </p>
                       )}
                     </div>
-                    {expense.installments && (
-                      <p className="text-xs text-slate-400">
-                        Total original: {formatCurrency(expense.installments.originalAmount)}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <button
-                      onClick={() => setEditingExpense(expense)}
-                      className="text-sm font-medium text-blue-600 hover:text-blue-800"
-                    >
-                      Editar
-                    </button>
-                    <p className="text-lg font-semibold text-slate-900">
-                      {formatCurrency(expense.amount)}
-                    </p>
-                  </div>
-                </div>
-              ))
+                    <div className="flex flex-col items-end gap-2">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Editar</span>
+                      <p className="text-lg font-semibold text-slate-900">{formatCurrency(expense.amount)}</p>
+                    </div>
+                  </button>
+                ))}
+            </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
       {editingExpense && (
         <EditExpenseModal

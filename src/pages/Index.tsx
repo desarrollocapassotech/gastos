@@ -12,7 +12,6 @@ import { ExpenseForm } from "@/components/ExpenseForm";
 
 const Index = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const [selectedRange, setSelectedRange] = useState("Mes");
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const { getExpensesForMonth, getTotalForMonth, getCategoriesWithTotals, updateExpense } = useExpenseStore();
 
@@ -32,7 +31,7 @@ const Index = () => {
     year: "numeric",
   });
 
-  const timeframeOptions = ["Día", "Semana", "Mes", "Año", "Período"];
+  const summaryLabel = "Total mensual";
 
   return (
     <div className="space-y-6 pb-32 sm:pb-20">
@@ -51,23 +50,6 @@ const Index = () => {
             <p className="text-xs text-white/70">Controla tus finanzas día a día.</p>
           </div>
 
-          <div className="mt-5 flex items-center gap-2 overflow-x-auto pb-1">
-            {timeframeOptions.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setSelectedRange(option)}
-                className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
-                  selectedRange === option
-                    ? "bg-white text-sky-600 shadow-sm"
-                    : "bg-white/10 text-white/80 hover:bg-white/20"
-                }`}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-
           <div className="mt-6 flex flex-col items-center gap-6">
             <div className="relative flex w-full justify-center">
               {monthlyExpenses.length > 0 ? (
@@ -79,7 +61,7 @@ const Index = () => {
                   centerLabel={
                     <div className="flex flex-col items-center text-white">
                       <span className="text-xs uppercase tracking-[0.25em] text-white/70">
-                        {selectedRange}
+                        {summaryLabel}
                       </span>
                       <span className="mt-1 text-3xl font-semibold">
                         {formatCurrency(monthlyTotal)}
