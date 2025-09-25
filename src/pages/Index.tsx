@@ -1,22 +1,31 @@
 import { useMemo, useState } from "react";
 import { Calendar, Plus, Sparkles } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
 import { ExpenseChart } from "@/components/ExpenseChart";
 import { CategoryList } from "@/components/CategoryList";
 import { MonthNavigator } from "@/components/MonthNavigator";
-import { Expense, useExpenseStore } from "@/hooks/useExpenseStore";
+import { Expense, Project, useExpenseStore } from "@/hooks/useExpenseStore";
 import { formatCurrency } from "@/lib/formatters";
 import { EditExpenseModal } from "@/components/EditExpenseModal";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const Index = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const { getExpensesForMonth, getTotalForMonth, getCategoriesWithTotals, updateExpense } = useExpenseStore();
+  const {
+    projects,
+    getExpensesForMonthByProject,
+    getTotalForMonth,
+    getCategoriesWithTotals,
+    updateExpense,
+  } = useExpenseStore();
+  const [selectedProjectId, setSelectedProjectId] = useState<string | "all">("all");
   const navigate = useNavigate();
 
-  const monthlyExpenses = getExpensesForMonth(selectedMonth);
-  const monthlyTotal = getTotalForMonth(selectedMonth);
-  const categoriesWithTotals = getCategoriesWithTotals(selectedMonth);
+  const projectFilter = selectedProjectId === "all" ? null : selectedProjectId;
+
+  const monthlyExpenses = getExpensesForMonthByProject(selectedMonth, projectFilter);
+  const monthlyTotal = getTotalForMonth(selectedMonth, projectFilter);
+  const categoriesWithTotals = getCategoriesWithTotals(selectedMonth, projectFilter);
 
   const totalCategoriesAmount = useMemo(
     () => categoriesWithTotals.reduce((sum, category) => sum + category.total, 0),
@@ -25,12 +34,17 @@ const Index = () => {
 
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
+  const selectedProject: Project | null = useMemo(() => {
+    if (!projectFilter) return null;
+    return projects.find((project) => project.id === projectFilter) ?? null;
+  }, [projectFilter, projects]);
+
   const monthText = selectedMonth.toLocaleDateString("es", {
     month: "long",
     year: "numeric",
   });
 
-  const summaryLabel = "Total mensual";
+  const summaryLabel = selectedProject ? selectedProject.name : "Total mensual";
 
   return (
     <div className="space-y-6 pb-32 sm:pb-20">
@@ -94,6 +108,62 @@ const Index = () => {
             />
           </div>
         </div>
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-sky-600">
+              Proyectos
+            </p>
+            <h2 className="text-sm font-semibold text-slate-900">
+              Filtra los gastos por proyecto
+            </h2>
+          </div>
+          <Link
+            to="/projects"
+            className="text-xs font-semibold text-sky-600 underline hover:text-sky-500"
+          >
+            Gestionar
+          </Link>
+        </div>
+        <ScrollArea className="w-full whitespace-nowrap">
+          <div className="flex gap-2 pb-2">
+            <button
+              type="button"
+              onClick={() => setSelectedProjectId("all")}
+              className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
+                selectedProjectId === "all"
+                  ? "border-sky-500 bg-sky-500 text-white shadow"
+                  : "border-slate-200 bg-white text-slate-600 hover:border-sky-200 hover:text-sky-600"
+              }`}
+            >
+              Todos
+            </button>
+            {projects.map((project) => {
+              const isActive = selectedProjectId === project.id;
+              return (
+                <button
+                  type="button"
+                  key={project.id}
+                  onClick={() => setSelectedProjectId(project.id)}
+                  className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
+                    isActive
+                      ? "border-sky-500 bg-sky-500 text-white shadow"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-sky-200 hover:text-sky-600"
+                  }`}
+                >
+                  <span
+                    className="inline-flex h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: project.color }}
+                  />
+                  {project.name}
+                </button>
+              );
+            })}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </section>
 
       <section className="space-y-4">

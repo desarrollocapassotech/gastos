@@ -16,6 +16,7 @@ import { ExpenseProvider } from "@/hooks/useExpenseStore";
 import Layout from "@/components/Layout";
 import ScrollToTop from "@/components/ScrollToTop";
 import AddExpense from "./pages/AddExpense";
+import Projects from "./pages/Projects";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
                 <Route element={<Layout />}>
                   <Route index element={<Index />} />
                   <Route path="/projected" element={<ProjectedExpenses />} />
+                  <Route path="/projects" element={<Projects />} />
                   <Route path="/expenses/new" element={<AddExpense />} />
                   <Route path="/month/:year/:month" element={<MonthDetail />} />
                   <Route path="/category/:category" element={<CategoryDetail />} />

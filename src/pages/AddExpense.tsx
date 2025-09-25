@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Calendar, ChevronRight, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -38,7 +38,7 @@ const parseDateValue = (value: string) => {
 
 const AddExpense = () => {
   const navigate = useNavigate();
-  const { categories, addExpense, addInstallmentExpense } = useExpenseStore();
+  const { categories, projects, addExpense, addInstallmentExpense } = useExpenseStore();
   const { toast } = useToast();
 
   const amountInputRef = useRef<HTMLInputElement>(null);
@@ -49,11 +49,18 @@ const AddExpense = () => {
   const [date, setDate] = useState(() => formatDateValue(new Date()));
   const [hasInstallments, setHasInstallments] = useState(false);
   const [installmentCount, setInstallmentCount] = useState("2");
+  const [projectId, setProjectId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     amountInputRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (!projectId && projects.length > 0) {
+      setProjectId(projects[0].id);
+    }
+  }, [projectId, projects]);
 
   const quickDateOptions = useMemo(() => {
     const today = new Date();
@@ -88,15 +95,16 @@ const AddExpense = () => {
     setDate(formatDateValue(new Date()));
     setHasInstallments(false);
     setInstallmentCount("2");
+    setProjectId(projects[0]?.id ?? null);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!amount || !category || !description) {
+    if (!amount || !category || !description || !projectId) {
       toast({
         title: "Faltan datos",
-        description: "Completa el monto, la categoría y el comentario",
+        description: "Completa el monto, la categoría, el comentario y el proyecto",
         variant: "destructive",
       });
       return;
@@ -134,7 +142,8 @@ const AddExpense = () => {
           category,
           description,
           installmentsNumber,
-          new Date(date)
+          new Date(date),
+          projectId
         );
 
         toast({
@@ -147,6 +156,7 @@ const AddExpense = () => {
           category,
           description,
           date,
+          projectId,
         });
 
         toast({
@@ -200,6 +210,44 @@ const AddExpense = () => {
           </div>
         </div>
       </div>
+
+      <section className="space-y-4">
+        <div className="space-y-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-sky-600">
+            Proyecto
+          </h2>
+          <p className="text-sm text-slate-500">
+            Organiza tus gastos por proyecto para analizarlos fácilmente
+          </p>
+          <Select value={projectId ?? undefined} onValueChange={setProjectId}>
+            <SelectTrigger id="project" className="h-12">
+              <SelectValue placeholder="Selecciona un proyecto" />
+            </SelectTrigger>
+            <SelectContent>
+              {projects.map((project) => (
+                <SelectItem key={project.id} value={project.id}>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="inline-flex h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: project.color }}
+                    />
+                    {project.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-slate-500">
+            ¿Necesitas otro proyecto?{' '}
+            <Link
+              to="/projects"
+              className="font-medium text-sky-600 underline hover:text-sky-500"
+            >
+              Gestionar proyectos
+            </Link>
+          </p>
+        </div>
+      </section>
 
       <section className="space-y-4">
         <div>
