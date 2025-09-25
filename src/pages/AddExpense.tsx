@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Calendar, ChevronRight } from "lucide-react";
+import { ArrowLeft, Calendar, ChevronRight, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,6 +49,7 @@ const AddExpense = () => {
   const [date, setDate] = useState(() => formatDateValue(new Date()));
   const [hasInstallments, setHasInstallments] = useState(false);
   const [installmentCount, setInstallmentCount] = useState("2");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     amountInputRef.current?.focus();
@@ -111,48 +112,61 @@ const AddExpense = () => {
       return;
     }
 
-    if (hasInstallments) {
-      if (
-        Number.isNaN(installmentsNumber) ||
-        installmentsNumber < 2 ||
-        installmentsNumber > 60
-      ) {
+    setIsSubmitting(true);
+
+    try {
+      if (hasInstallments) {
+        if (
+          Number.isNaN(installmentsNumber) ||
+          installmentsNumber < 2 ||
+          installmentsNumber > 60
+        ) {
+          toast({
+            title: "Cuotas inválidas",
+            description: "El número de cuotas debe estar entre 2 y 60",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        await addInstallmentExpense(
+          numericAmount,
+          category,
+          description,
+          installmentsNumber,
+          new Date(date)
+        );
+
         toast({
-          title: "Cuotas inválidas",
-          description: "El número de cuotas debe estar entre 2 y 60",
-          variant: "destructive",
+          title: "Gasto agregado",
+          description: `Distribuido en ${installmentsNumber} cuotas`,
         });
-        return;
+      } else {
+        await addExpense({
+          amount: numericAmount,
+          category,
+          description,
+          date,
+        });
+
+        toast({
+          title: "Gasto agregado",
+          description: "Se registró correctamente",
+        });
       }
 
-      await addInstallmentExpense(
-        numericAmount,
-        category,
-        description,
-        installmentsNumber,
-        new Date(date)
-      );
-
+      resetForm();
+      navigate("/", { replace: true });
+    } catch (error) {
       toast({
-        title: "Gasto agregado",
-        description: `Distribuido en ${installmentsNumber} cuotas`,
+        title: "Error al guardar",
+        description: "Intenta nuevamente en unos instantes",
+        variant: "destructive",
       });
-    } else {
-      await addExpense({
-        amount: numericAmount,
-        category,
-        description,
-        date,
-      });
-
-      toast({
-        title: "Gasto agregado",
-        description: "Se registró correctamente",
-      });
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    resetForm();
-    navigate("/", { replace: true });
   };
 
   return (
@@ -332,9 +346,16 @@ const AddExpense = () => {
       <div className="fixed inset-x-0 bottom-6 flex justify-center px-4 sm:px-6">
         <Button
           type="submit"
+          disabled={isSubmitting}
           className="w-full max-w-md rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-base font-semibold shadow-lg transition hover:from-blue-600 hover:to-blue-700"
         >
-          Guardar gasto
+          {isSubmitting ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" /> Guardando
+            </span>
+          ) : (
+            "Guardar gasto"
+          )}
         </Button>
       </div>
     </form>
