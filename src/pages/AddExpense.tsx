@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Calendar, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -23,12 +23,18 @@ const AddExpense = () => {
   const { categories, addExpense, addInstallmentExpense } = useExpenseStore();
   const { toast } = useToast();
 
+  const amountInputRef = useRef<HTMLInputElement>(null);
+
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [hasInstallments, setHasInstallments] = useState(false);
   const [installmentCount, setInstallmentCount] = useState("2");
+
+  useEffect(() => {
+    amountInputRef.current?.focus();
+  }, []);
 
   const quickDateOptions = useMemo(() => {
     const today = new Date();
@@ -136,6 +142,7 @@ const AddExpense = () => {
             <input
               type="number"
               inputMode="decimal"
+              ref={amountInputRef}
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               placeholder="0"
