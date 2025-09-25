@@ -27,33 +27,19 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route element={<PrivateRoute />}>
-              <Route path="/" element={<Index />} />
-              <Route path="/projected" element={<ProjectedExpenses />} />
-              <Route path="/month/:year/:month" element={<MonthDetail />} />
-              <Route path="/category/:category" element={<CategoryDetail />} />
+              <Route element={<Layout />}>
+                <Route index element={<Index />} />
+                <Route path="/projected" element={<ProjectedExpenses />} />
+                <Route path="/month/:year/:month" element={<MonthDetail />} />
+                <Route path="/category/:category" element={<CategoryDetail />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Route>
             </Route>
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<Index />} />
-            <Route path="/projected" element={<ProjectedExpenses />} />
-            <Route path="/month/:year/:month" element={<MonthDetail />} />
-            <Route path="/category/:category" element={<CategoryDetail />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
   </QueryClientProvider>
 );
 
