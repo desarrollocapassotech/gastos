@@ -1,8 +1,6 @@
-
-import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { useNavigate } from 'react-router-dom';
-import { formatCurrency } from '@/lib/formatters';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { formatCurrency } from "@/lib/formatters";
 
 interface Category {
   id: string;
@@ -14,7 +12,6 @@ interface Category {
 
 interface CategoryListProps {
   categories: Category[];
-  selectedMonth: Date;
 }
 
 export const CategoryList: React.FC<CategoryListProps> = ({ categories }) => {
@@ -22,8 +19,8 @@ export const CategoryList: React.FC<CategoryListProps> = ({ categories }) => {
 
   if (categories.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        <div className="text-4xl mb-2">🏷️</div>
+      <div className="py-8 text-center text-sm text-slate-500">
+        <div className="mb-2 text-3xl">🏷️</div>
         <p>No hay categorías con gastos</p>
       </div>
     );
@@ -34,31 +31,28 @@ export const CategoryList: React.FC<CategoryListProps> = ({ categories }) => {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {categories.map((category) => (
-        <div 
+        <button
           key={category.id}
-          className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+          type="button"
           onClick={() => handleCategoryClick(category.name)}
+          className="flex w-full items-center justify-between rounded-xl border border-blue-100 bg-blue-50/40 p-3 text-left transition-colors hover:bg-blue-50"
         >
           <div className="flex items-center gap-3">
-            <div 
-              className="w-4 h-4 rounded-full flex-shrink-0"
+            <span
+              className="h-4 w-4 rounded-full"
               style={{ backgroundColor: category.color }}
             />
-            <div>
-              <div className="font-medium flex items-center gap-2">
-                <span>{category.icon}</span>
-                <span>{category.name}</span>
-              </div>
-            </div>
+            <span className="flex items-center gap-2 text-sm font-medium text-slate-900">
+              <span>{category.icon}</span>
+              {category.name}
+            </span>
           </div>
-          <div className="text-right">
-            <div className="font-semibold text-gray-900">
-              {formatCurrency(category.total)}
-            </div>
-          </div>
-        </div>
+          <span className="text-sm font-semibold text-slate-900">
+            {formatCurrency(category.total)}
+          </span>
+        </button>
       ))}
     </div>
   );
