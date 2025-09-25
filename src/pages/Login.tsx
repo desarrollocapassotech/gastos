@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
+import FullScreenLoader from '@/components/FullScreenLoader';
 
 const GoogleIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
@@ -26,16 +27,17 @@ const GoogleIcon = (props: SVGProps<SVGSVGElement>) => (
 );
 
 const Login = () => {
-  const { signInWithGoogle, signInWithEmail, user, profile } = useAuth();
+  const { signInWithGoogle, signInWithEmail, user, profile, loading, profileChecked } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!profileChecked) return;
     if (user && profile) navigate('/');
     if (user && !profile) navigate('/register');
-  }, [user, profile, navigate]);
+  }, [user, profile, navigate, profileChecked]);
 
   const handleGoogle = async () => {
     await signInWithGoogle();
@@ -51,6 +53,10 @@ const Login = () => {
       setError('No pudimos iniciar sesión con esas credenciales.');
     }
   };
+
+  if (loading || (user && !profileChecked)) {
+    return <FullScreenLoader />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
