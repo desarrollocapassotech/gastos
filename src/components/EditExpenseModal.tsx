@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatCurrencyInput, parseCurrencyInput } from '@/lib/formatters';
 import { Loader2 } from 'lucide-react';
+import { DatePicker } from '@/components/DatePicker';
 
 interface Expense {
   id: string;
@@ -107,13 +108,12 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date">Fecha</Label>
-              <Input
-                id="date"
-                type="date"
+              <Label htmlFor="edit-date">Fecha</Label>
+              <DatePicker
+                id="edit-date"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
+                onChange={setDate}
+                buttonClassName="h-10"
               />
             </div>
 

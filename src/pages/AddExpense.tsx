@@ -3,7 +3,6 @@ import { ArrowLeft, Calendar, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useExpenseStore } from "@/hooks/useExpenseStore";
 import { useToast } from "@/hooks/use-toast";
+import { DatePicker } from "@/components/DatePicker";
 import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from "@/lib/formatters";
 
 const formatDateLabel = (date: Date) =>
@@ -18,6 +18,23 @@ const formatDateLabel = (date: Date) =>
     day: "numeric",
     month: "numeric",
   });
+
+const formatDateValue = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+const parseDateValue = (value: string) => {
+  const segments = value.split("-");
+  if (segments.length !== 3) {
+    return new Date();
+  }
+
+  const [year, month, day] = segments.map(Number);
+  if (!year || !month || !day) {
+    return new Date();
+  }
+
+  return new Date(year, month - 1, day);
+};
 
 const AddExpense = () => {
   const navigate = useNavigate();
@@ -29,7 +46,7 @@ const AddExpense = () => {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(() => formatDateValue(new Date()));
   const [hasInstallments, setHasInstallments] = useState(false);
   const [installmentCount, setInstallmentCount] = useState("2");
 
@@ -42,7 +59,7 @@ const AddExpense = () => {
     return [0, 1, 2].map((offset) => {
       const optionDate = new Date(today);
       optionDate.setDate(today.getDate() - offset);
-      const value = optionDate.toISOString().split("T")[0];
+      const value = formatDateValue(optionDate);
       return {
         value,
         label: formatDateLabel(optionDate),
@@ -67,7 +84,7 @@ const AddExpense = () => {
     setAmount("");
     setCategory(null);
     setDescription("");
-    setDate(new Date().toISOString().split("T")[0]);
+    setDate(formatDateValue(new Date()));
     setHasInstallments(false);
     setInstallmentCount("2");
   };
@@ -215,7 +232,7 @@ const AddExpense = () => {
           </div>
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <Calendar className="h-4 w-4" />
-            <span>{new Date(date).toLocaleDateString("es", { dateStyle: "long" })}</span>
+            <span>{parseDateValue(date).toLocaleDateString("es", { dateStyle: "long" })}</span>
           </div>
         </div>
         <div className="grid grid-cols-3 gap-3">
@@ -244,12 +261,12 @@ const AddExpense = () => {
             <Label htmlFor="date" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               Otra fecha
             </Label>
-            <Input
+            <DatePicker
               id="date"
-              type="date"
               value={date}
-              onChange={(event) => setDate(event.target.value)}
-              className="mt-1"
+              onChange={setDate}
+              buttonClassName="mt-1"
+              placeholder="Elegí una fecha"
             />
           </div>
           <ChevronRight className="h-5 w-5 text-slate-400" />
