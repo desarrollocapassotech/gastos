@@ -10,10 +10,59 @@ if (!rootElement) {
 
 createRoot(rootElement).render(<App />)
 
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch((error) => {
-      console.error('Error al registrar el service worker:', error)
+const registerServiceWorker = async () => {
+  if (!('serviceWorker' in navigator)) {
+    return
+  }
+
+  try {
+    const registration = await navigator.serviceWorker.register('/sw.js')
+
+    const notifyWaitingWorker = () => {
+      if (registration.waiting) {
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+      }
+    }
+
+    registration.addEventListener('updatefound', () => {
+      const newWorker = registration.installing
+
+      if (!newWorker) {
+        return
+      }
+
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          notifyWaitingWorker()
+        }
+      })
     })
+
+    if (registration.waiting) {
+      notifyWaitingWorker()
+    }
+
+    setInterval(() => {
+      registration.update()
+    }, 60 * 60 * 1000)
+  } catch (error) {
+    console.error('Error al registrar el service worker:', error)
+  }
+}
+
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  let refreshing = false
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) {
+      return
+    }
+
+    refreshing = true
+    window.location.reload()
+  })
+
+  window.addEventListener('load', () => {
+    registerServiceWorker()
   })
 }
