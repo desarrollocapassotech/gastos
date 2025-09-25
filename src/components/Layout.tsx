@@ -1,9 +1,12 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
 import { PiggyBank } from "lucide-react";
 import SideMenu from "@/components/SideMenu";
 import { FloatingExpenseButton } from "@/components/FloatingExpenseButton";
 
 export function Layout() {
+  const location = useLocation();
+  const shouldHideFloatingButton = location.pathname === "/expenses/new";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100">
       <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col">
@@ -28,7 +31,7 @@ export function Layout() {
         <main className="flex-1 px-4 pb-28 pt-6 sm:px-6">
           <Outlet />
         </main>
-        <FloatingExpenseButton />
+        {!shouldHideFloatingButton && <FloatingExpenseButton />}
       </div>
     </div>
   );

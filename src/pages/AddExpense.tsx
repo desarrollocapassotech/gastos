@@ -118,7 +118,7 @@ const AddExpense = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 pb-16">
+    <form onSubmit={handleSubmit} className="space-y-8 pb-40">
       <div className="rounded-3xl bg-gradient-to-br from-emerald-400 via-sky-500 to-indigo-500 p-6 text-white shadow-xl">
         <button
           type="button"
@@ -291,15 +291,13 @@ const AddExpense = () => {
         </Card>
       </section>
 
-      <div className="flex gap-3">
-        <Button type="button" variant="outline" className="flex-1" onClick={() => navigate(-1)}>
-          Cancelar
-        </Button>
+      <div className="h-24" />
+      <div className="fixed inset-x-0 bottom-6 flex justify-center px-4 sm:px-6">
         <Button
           type="submit"
-          className="flex-1 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-base font-semibold shadow-lg transition hover:from-blue-600 hover:to-blue-700"
+          className="w-full max-w-md rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-base font-semibold shadow-lg transition hover:from-blue-600 hover:to-blue-700"
         >
-          Añadir gasto
+          Guardar gasto
         </Button>
       </div>
     </form>
