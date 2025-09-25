@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { useExpenseStore } from '@/hooks/useExpenseStore';
 import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 interface ExpenseFormProps {
   open: boolean;
@@ -23,6 +24,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ open, onClose }) => {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [hasInstallments, setHasInstallments] = useState(false);
   const [installmentCount, setInstallmentCount] = useState('2');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { categories, addExpense, addInstallmentExpense } = useExpenseStore();
   const { toast } = useToast();
@@ -49,51 +51,65 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ open, onClose }) => {
       return;
     }
 
-    if (hasInstallments) {
-      const installments = parseInt(installmentCount);
-      if (installments < 2 || installments > 60) {
+    const installments = parseInt(installmentCount);
+
+    setIsSubmitting(true);
+
+    try {
+      if (hasInstallments) {
+        if (installments < 2 || installments > 60) {
+          toast({
+            title: "Error",
+            description: "El número de cuotas debe estar entre 2 y 60",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        await addInstallmentExpense(
+          numericAmount,
+          category,
+          description,
+          installments,
+          new Date(date)
+        );
+
         toast({
-          title: "Error",
-          description: "El número de cuotas debe estar entre 2 y 60",
-          variant: "destructive",
+          title: "¡Éxito!",
+          description: `Gasto agregado en ${installments} cuotas`,
         });
-        return;
+      } else {
+        await addExpense({
+          amount: numericAmount,
+          category,
+          description,
+          date,
+        });
+
+        toast({
+          title: "¡Éxito!",
+          description: "Gasto agregado correctamente",
+        });
       }
-      
-      await addInstallmentExpense(
-        numericAmount,
-        category,
-        description,
-        installments,
-        new Date(date)
-      );
 
+      // Reset form
+      setAmount('');
+      setCategory('');
+      setDescription('');
+      setDate(new Date().toISOString().split('T')[0]);
+      setHasInstallments(false);
+      setInstallmentCount('2');
+      onClose();
+    } catch (error) {
+      console.error('Error saving expense', error);
       toast({
-        title: "¡Éxito!",
-        description: `Gasto agregado en ${installments} cuotas`,
+        title: "Error",
+        description: "No se pudo guardar el gasto. Intenta nuevamente.",
+        variant: "destructive",
       });
-    } else {
-      await addExpense({
-        amount: numericAmount,
-        category,
-        description,
-        date,
-      });
-      
-      toast({
-        title: "¡Éxito!",
-        description: "Gasto agregado correctamente",
-      });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Reset form
-    setAmount('');
-    setCategory('');
-    setDescription('');
-    setDate(new Date().toISOString().split('T')[0]);
-    setHasInstallments(false);
-    setInstallmentCount('2');
-    onClose();
   };
 
   return (
@@ -201,11 +217,28 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ open, onClose }) => {
           </Card>
 
           <div className="flex gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="flex-1"
+              disabled={isSubmitting}
+            >
               Cancelar
             </Button>
-            <Button type="submit" className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600">
-              Agregar Gasto
+            <Button
+              type="submit"
+              className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                'Agregar Gasto'
+              )}
             </Button>
           </div>
         </form>

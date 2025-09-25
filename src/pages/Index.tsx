@@ -147,8 +147,8 @@ const Index = () => {
       {editingExpense && (
         <EditExpenseModal
           expense={editingExpense}
-          onSave={(updatedData) => {
-            updateExpense(editingExpense.id, updatedData);
+          onSave={async (updatedData) => {
+            await updateExpense(editingExpense.id, updatedData);
             setEditingExpense(null);
           }}
           onClose={() => setEditingExpense(null)}
