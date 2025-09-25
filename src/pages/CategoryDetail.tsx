@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Expense, useExpenseStore } from "@/hooks/useExpenseStore";
 import { formatCurrency } from "@/lib/formatters";
-import { FloatingExpenseButton } from "@/components/FloatingExpenseButton";
 import { EditExpenseModal } from "@/components/EditExpenseModal";
 
 const CategoryDetail = () => {
@@ -171,7 +170,6 @@ const CategoryDetail = () => {
         />
       )}
 
-      <FloatingExpenseButton />
     </div>
   );
 };
