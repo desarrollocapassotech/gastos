@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { formatCurrencyInput, parseCurrencyInput } from '@/lib/formatters';
 import { Loader2 } from 'lucide-react';
 
 interface Expense {
@@ -26,7 +27,7 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
   onSave,
   onClose,
 }) => {
-  const [amount, setAmount] = useState(expense.amount.toString());
+  const [amount, setAmount] = useState(formatCurrencyInput(expense.amount.toFixed(2)));
   const [category, setCategory] = useState(expense.category);
   const [description, setDescription] = useState(expense.description);
   const [date, setDate] = useState(expense.date);
@@ -34,6 +35,13 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    onSave({
+      amount: parseCurrencyInput(amount),
+      category,
+      description,
+      date,
+    });
+    onClose();
 
     setIsSaving(true);
 
@@ -65,13 +73,12 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
               <Label htmlFor="amount">Monto</Label>
               <Input
                 id="amount"
-                type="number"
-                step="0.01"
-                min="0"
+                type="text"
+                inputMode="decimal"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => setAmount(formatCurrencyInput(e.target.value))}
                 required
-                placeholder="Ejemplo: 150.50"
+                placeholder="Ejemplo: 150,50"
               />
             </div>
 
