@@ -51,7 +51,7 @@ const buildCurrentMonthNavigationItem = (): NavigationItem => {
 };
 
 const linkBaseClasses =
-  "group relative flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all md:w-auto md:rounded-2xl md:px-4 md:py-3 md:font-semibold";
+  "group relative flex w-full items-center justify-start gap-4 rounded-2xl px-4 py-3 text-sm font-semibold text-left transition-all md:w-auto md:gap-3";
 
 const getLinkClasses = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -110,7 +110,7 @@ export function SideMenu() {
                 <item.icon className="h-4 w-4" />
               </span>
             )}
-            <span className="text-sm font-semibold tracking-tight">{item.label}</span>
+            <span className="flex-1 text-sm font-semibold tracking-tight">{item.label}</span>
           </NavLink>
         ))}
         <Button
@@ -163,7 +163,7 @@ export function SideMenu() {
                           <item.icon className="h-4 w-4" />
                         </span>
                       )}
-                      <span className="text-sm font-semibold tracking-tight">
+                      <span className="flex-1 text-sm font-semibold tracking-tight">
                         {item.label}
                       </span>
                     </NavLink>
