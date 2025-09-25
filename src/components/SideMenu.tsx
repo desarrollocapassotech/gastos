@@ -52,7 +52,7 @@ const buildCurrentMonthNavigationItem = (): NavigationItem => {
 };
 
 const linkBaseClasses =
-  "group relative flex w-full items-center justify-start gap-4 rounded-2xl px-4 py-3 text-sm font-semibold text-left transition-all md:w-auto md:gap-3";
+  "group relative block w-full rounded-2xl px-4 py-3 text-sm font-semibold text-left transition-all md:w-auto";
 
 const getLinkClasses = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -101,18 +101,20 @@ export function SideMenu() {
             to={item.to}
             className={({ isActive }) => getLinkClasses({ isActive })}
           >
-            {item.icon && (
-              <span
-                className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600 transition-all md:h-10 md:w-10",
-                  "group-hover:border-blue-200 group-hover:bg-blue-100 group-hover:text-blue-700",
-                  "group-aria-[current=page]:border-white/40 group-aria-[current=page]:bg-white/20 group-aria-[current=page]:text-white group-aria-[current=page]:shadow-inner"
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-              </span>
-            )}
-            <span className="flex-1 text-sm font-semibold tracking-tight">{item.label}</span>
+            <div className="flex w-full items-center gap-4 md:gap-3">
+              {item.icon && (
+                <span
+                  className={cn(
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600 transition-all md:h-10 md:w-10",
+                    "group-hover:border-blue-200 group-hover:bg-blue-100 group-hover:text-blue-700",
+                    "group-aria-[current=page]:border-white/40 group-aria-[current=page]:bg-white/20 group-aria-[current=page]:text-white group-aria-[current=page]:shadow-inner"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                </span>
+              )}
+              <span className="flex-1 text-sm font-semibold tracking-tight">{item.label}</span>
+            </div>
           </NavLink>
         ))}
         <Button
@@ -154,20 +156,22 @@ export function SideMenu() {
                       to={item.to}
                       className={({ isActive }) => getLinkClasses({ isActive })}
                     >
-                      {item.icon && (
-                        <span
-                          className={cn(
-                            "flex h-9 w-9 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600 transition-all md:h-10 md:w-10",
-                            "group-hover:border-blue-200 group-hover:bg-blue-100 group-hover:text-blue-700",
-                            "group-aria-[current=page]:border-white/40 group-aria-[current=page]:bg-white/20 group-aria-[current=page]:text-white group-aria-[current=page]:shadow-inner"
-                          )}
-                        >
-                          <item.icon className="h-4 w-4" />
+                      <div className="flex w-full items-center gap-4 md:gap-3">
+                        {item.icon && (
+                          <span
+                            className={cn(
+                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600 transition-all md:h-10 md:w-10",
+                              "group-hover:border-blue-200 group-hover:bg-blue-100 group-hover:text-blue-700",
+                              "group-aria-[current=page]:border-white/40 group-aria-[current=page]:bg-white/20 group-aria-[current=page]:text-white group-aria-[current=page]:shadow-inner"
+                            )}
+                          >
+                            <item.icon className="h-4 w-4" />
+                          </span>
+                        )}
+                        <span className="flex-1 text-sm font-semibold tracking-tight">
+                          {item.label}
                         </span>
-                      )}
-                      <span className="flex-1 text-sm font-semibold tracking-tight">
-                        {item.label}
-                      </span>
+                      </div>
                     </NavLink>
                   </SheetClose>
                 ))}
@@ -195,22 +199,24 @@ export function SideMenu() {
                               cn(getLinkClasses({ isActive }), "text-left")
                             }
                           >
-                            <span
-                              className={cn(
-                                "flex h-9 w-9 items-center justify-center rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-blue-100 text-base transition-all md:h-10 md:w-10 md:text-lg",
-                                "group-hover:border-blue-200 group-hover:shadow",
-                                "group-aria-[current=page]:border-white/40 group-aria-[current=page]:from-blue-500/30 group-aria-[current=page]:via-indigo-500/20 group-aria-[current=page]:to-indigo-400/30 group-aria-[current=page]:text-white"
-                              )}
-                            >
-                              {category.icon}
-                            </span>
-                            <div className="flex flex-1 flex-col">
-                              <span className="text-sm font-semibold tracking-tight">
-                                {category.label}
+                            <div className="flex w-full items-center gap-4 md:gap-3">
+                              <span
+                                className={cn(
+                                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-blue-100 text-base transition-all md:h-10 md:w-10 md:text-lg",
+                                  "group-hover:border-blue-200 group-hover:shadow",
+                                  "group-aria-[current=page]:border-white/40 group-aria-[current=page]:from-blue-500/30 group-aria-[current=page]:via-indigo-500/20 group-aria-[current=page]:to-indigo-400/30 group-aria-[current=page]:text-white"
+                                )}
+                              >
+                                {category.icon}
                               </span>
-                              <span className="text-xs text-slate-500 transition-colors group-aria-[current=page]:text-white/80">
-                                Ver movimientos
-                              </span>
+                              <div className="flex flex-1 flex-col">
+                                <span className="text-sm font-semibold tracking-tight">
+                                  {category.label}
+                                </span>
+                                <span className="text-xs text-slate-500 transition-colors group-aria-[current=page]:text-white/80">
+                                  Ver movimientos
+                                </span>
+                              </div>
                             </div>
                           </NavLink>
                         </SheetClose>
