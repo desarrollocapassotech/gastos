@@ -14,6 +14,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ExpenseProvider } from "@/hooks/useExpenseStore";
 import Layout from "@/components/Layout";
+import ScrollToTop from "@/components/ScrollToTop";
 import AddExpense from "./pages/AddExpense";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <ScrollToTop />
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
