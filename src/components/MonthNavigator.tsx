@@ -62,8 +62,8 @@ export const MonthNavigator: React.FC<MonthNavigatorProps> = ({
             className={cn(
               "h-10 w-10 rounded-full",
               isTranslucent
-                ? "border-white/40 text-white hover:bg-white/20"
-                : "border-blue-200 text-slate-700 hover:bg-blue-50"
+                ? "border-white/40 bg-white/10 text-white hover:bg-white/20"
+                : "border-blue-200 bg-white text-slate-700 hover:bg-blue-50"
             )}
           >
             <ChevronLeft size={16} />
@@ -102,8 +102,8 @@ export const MonthNavigator: React.FC<MonthNavigatorProps> = ({
             className={cn(
               "h-10 w-10 rounded-full",
               isTranslucent
-                ? "border-white/40 text-white hover:bg-white/20"
-                : "border-blue-200 text-slate-700 hover:bg-blue-50"
+                ? "border-white/40 bg-white/10 text-white hover:bg-white/20"
+                : "border-blue-200 bg-white text-slate-700 hover:bg-blue-50"
             )}
           >
             <ChevronRight size={16} />
