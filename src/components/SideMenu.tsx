@@ -1,4 +1,5 @@
-import { Menu, LogOut } from "lucide-react";
+import type React from "react";
+import { Menu, LogOut, LayoutDashboard, CalendarRange, Sparkles } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,18 +9,34 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { formatMonth } from "@/lib/formatters";
 import { useAuth } from "@/hooks/useAuth";
+import { useExpenseStore } from "@/hooks/useExpenseStore";
 
-const getNavigationItems = () => {
+type NavigationItem = {
+  to: string;
+  label: string;
+  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+};
+
+type CategoryNavigationItem = {
+  to: string;
+  label: string;
+  icon: string;
+};
+
+const buildCurrentMonthNavigationItem = (): NavigationItem => {
   const today = new Date();
   const currentMonthPath = `/month/${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, "0")}`;
 
-  return [
-    { to: "/", label: "Inicio" },
-    { to: currentMonthPath, label: "Detalle del mes" },
-    { to: "/projected", label: "Gastos proyectados" },
-  ];
+  return {
+    to: currentMonthPath,
+    label: `Detalle ${formatMonth(today)}`,
+    icon: CalendarRange,
+  };
 };
 
 const getLinkClasses = ({ isActive }: { isActive: boolean }) =>
@@ -33,7 +50,22 @@ const getLinkClasses = ({ isActive }: { isActive: boolean }) =>
 export function SideMenu() {
   const navigate = useNavigate();
   const { signOutUser } = useAuth();
-  const navigationItems = getNavigationItems();
+  const { categories } = useExpenseStore();
+
+  const navigationItems: NavigationItem[] = [
+    { to: "/", label: "Inicio", icon: LayoutDashboard },
+    buildCurrentMonthNavigationItem(),
+    { to: "/projected", label: "Gastos proyectados", icon: Sparkles },
+  ];
+
+  const categoryItems: CategoryNavigationItem[] = categories
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name, "es"))
+    .map((category) => ({
+      to: `/category/${encodeURIComponent(category.name)}`,
+      label: category.name,
+      icon: category.icon,
+    }));
 
   const handleSignOut = async () => {
     try {
@@ -48,7 +80,14 @@ export function SideMenu() {
     <>
       <nav className="hidden items-center gap-2 md:flex">
         {navigationItems.map((item) => (
-          <NavLink key={item.to} to={item.to} className={getLinkClasses}>
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) =>
+              cn(getLinkClasses({ isActive }), "inline-flex items-center gap-2")
+            }
+          >
+            {item.icon && <item.icon className="h-4 w-4" />}
             {item.label}
           </NavLink>
         ))}
@@ -67,7 +106,7 @@ export function SideMenu() {
           <Button
             variant="outline"
             size="icon"
-            className="md:hidden h-10 w-10 rounded-full border-blue-200 bg-white/90 shadow-sm"
+            className="h-10 w-10 rounded-full border-blue-200 bg-white/90 shadow-sm md:hidden"
           >
             <Menu className="h-5 w-5 text-slate-700" />
             <span className="sr-only">Abrir menú</span>
@@ -77,20 +116,60 @@ export function SideMenu() {
           side="left"
           className="w-full max-w-xs border-r border-blue-100 bg-gradient-to-b from-white to-blue-50 p-0"
         >
-          <div className="px-6 pb-2 pt-8">
-            <SheetTitle className="text-left text-lg font-semibold text-slate-900">
-              Navegación
-            </SheetTitle>
-          </div>
-          <nav className="flex flex-col gap-2 px-6 pb-6">
-            {navigationItems.map((item) => (
-              <SheetClose asChild key={item.to}>
-                <NavLink to={item.to} className={getLinkClasses}>
-                  {item.label}
-                </NavLink>
-              </SheetClose>
-            ))}
-          </nav>
+          <ScrollArea className="h-full">
+            <div className="px-6 pb-2 pt-8">
+              <SheetTitle className="text-left text-lg font-semibold text-slate-900">
+                Navegación
+              </SheetTitle>
+            </div>
+            <nav className="flex flex-col gap-2 px-6 pb-6">
+              {navigationItems.map((item) => (
+                <SheetClose asChild key={item.to}>
+                  <NavLink
+                    to={item.to}
+                    className={({ isActive }) =>
+                      cn(getLinkClasses({ isActive }), "flex items-center gap-3")
+                    }
+                  >
+                    {item.icon && <item.icon className="h-4 w-4" />}
+                    <span>{item.label}</span>
+                  </NavLink>
+                </SheetClose>
+              ))}
+            </nav>
+            {categoryItems.length > 0 && (
+              <div className="space-y-4 px-6 pb-6">
+                <div className="space-y-2">
+                  <Separator className="border-blue-100/80" />
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Categorías
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {categoryItems.map((category) => (
+                    <SheetClose asChild key={category.to}>
+                      <NavLink
+                        to={category.to}
+                        className={({ isActive }) =>
+                          cn(
+                            getLinkClasses({ isActive }),
+                            "flex items-center gap-3 text-left"
+                          )
+                        }
+                      >
+                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-lg">
+                          {category.icon}
+                        </span>
+                        <span className="flex-1 text-sm font-medium">
+                          {category.label}
+                        </span>
+                      </NavLink>
+                    </SheetClose>
+                  ))}
+                </div>
+              </div>
+            )}
+          </ScrollArea>
           <div className="border-t border-blue-100/60 px-6 py-4">
             <SheetClose asChild>
               <Button
