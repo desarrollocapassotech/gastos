@@ -1,6 +1,7 @@
 import { Outlet, Link } from "react-router-dom";
 import { PiggyBank } from "lucide-react";
 import SideMenu from "@/components/SideMenu";
+import { FloatingExpenseButton } from "@/components/FloatingExpenseButton";
 
 export function Layout() {
   return (
@@ -27,6 +28,7 @@ export function Layout() {
         <main className="flex-1 px-4 pb-28 pt-6 sm:px-6">
           <Outlet />
         </main>
+        <FloatingExpenseButton />
       </div>
     </div>
   );
