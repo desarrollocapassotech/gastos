@@ -14,6 +14,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ExpenseProvider } from "@/hooks/useExpenseStore";
 import Layout from "@/components/Layout";
+import AddExpense from "./pages/AddExpense";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
                 <Route element={<Layout />}>
                   <Route index element={<Index />} />
                   <Route path="/projected" element={<ProjectedExpenses />} />
+                  <Route path="/expenses/new" element={<AddExpense />} />
                   <Route path="/month/:year/:month" element={<MonthDetail />} />
                   <Route path="/category/:category" element={<CategoryDetail />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
