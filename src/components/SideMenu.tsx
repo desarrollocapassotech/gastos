@@ -1,5 +1,5 @@
-import { Menu } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { Menu, LogOut } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -9,11 +9,18 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
-const navigationItems = [
-  { to: "/", label: "Inicio" },
-  { to: "/projected", label: "Gastos proyectados" },
-];
+const getNavigationItems = () => {
+  const today = new Date();
+  const currentMonthPath = `/month/${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, "0")}`;
+
+  return [
+    { to: "/", label: "Inicio" },
+    { to: currentMonthPath, label: "Detalle del mes" },
+    { to: "/projected", label: "Gastos proyectados" },
+  ];
+};
 
 const getLinkClasses = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -24,6 +31,19 @@ const getLinkClasses = ({ isActive }: { isActive: boolean }) =>
   );
 
 export function SideMenu() {
+  const navigate = useNavigate();
+  const { signOutUser } = useAuth();
+  const navigationItems = getNavigationItems();
+
+  const handleSignOut = async () => {
+    try {
+      await signOutUser();
+      navigate("/login");
+    } catch (error) {
+      console.error("Error signing out", error);
+    }
+  };
+
   return (
     <>
       <nav className="hidden items-center gap-2 md:flex">
@@ -32,6 +52,14 @@ export function SideMenu() {
             {item.label}
           </NavLink>
         ))}
+        <Button
+          variant="ghost"
+          onClick={handleSignOut}
+          className="ml-2 inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-blue-600"
+        >
+          <LogOut className="h-4 w-4" />
+          Cerrar sesión
+        </Button>
       </nav>
 
       <Sheet>
@@ -63,6 +91,18 @@ export function SideMenu() {
               </SheetClose>
             ))}
           </nav>
+          <div className="border-t border-blue-100/60 px-6 py-4">
+            <SheetClose asChild>
+              <Button
+                onClick={handleSignOut}
+                variant="outline"
+                className="flex w-full items-center justify-center gap-2 rounded-full border-blue-200 text-slate-700 hover:bg-blue-50"
+              >
+                <LogOut className="h-4 w-4" />
+                Cerrar sesión
+              </Button>
+            </SheetClose>
+          </div>
         </SheetContent>
       </Sheet>
     </>

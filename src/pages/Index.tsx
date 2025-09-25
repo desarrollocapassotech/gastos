@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { TrendingUp, Calendar, PieChart, DollarSign } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMemo, useState } from "react";
+import { Calendar, Clock, Plus, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { ExpenseChart } from "@/components/ExpenseChart";
@@ -8,126 +7,221 @@ import { CategoryList } from "@/components/CategoryList";
 import { MonthNavigator } from "@/components/MonthNavigator";
 import { Expense, useExpenseStore } from "@/hooks/useExpenseStore";
 import { formatCurrency } from "@/lib/formatters";
-import { FloatingExpenseButton } from "@/components/FloatingExpenseButton";
 import { EditExpenseModal } from "@/components/EditExpenseModal";
+import { ExpenseForm } from "@/components/ExpenseForm";
 
 const Index = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [selectedRange, setSelectedRange] = useState("Mes");
+  const [showExpenseForm, setShowExpenseForm] = useState(false);
   const { getExpensesForMonth, getTotalForMonth, getCategoriesWithTotals, updateExpense } = useExpenseStore();
 
   const monthlyExpenses = getExpensesForMonth(selectedMonth);
   const monthlyTotal = getTotalForMonth(selectedMonth);
   const categoriesWithTotals = getCategoriesWithTotals(selectedMonth);
 
-  const currentMonth =
-    new Date().getMonth() === selectedMonth.getMonth() &&
-    new Date().getFullYear() === selectedMonth.getFullYear();
+  const totalCategoriesAmount = useMemo(
+    () => categoriesWithTotals.reduce((sum, category) => sum + category.total, 0),
+    [categoriesWithTotals]
+  );
 
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
+  const monthText = selectedMonth.toLocaleDateString("es", {
+    month: "long",
+    year: "numeric",
+  });
+
+  const timeframeOptions = ["Día", "Semana", "Mes", "Año", "Período"];
+
   return (
-    <div className="space-y-6 pb-14">
-      <section className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
-          Resumen mensual
-        </p>
-        <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">Mis gastos</h1>
-        <p className="text-sm text-slate-600">
-          Controla tus finanzas de manera simple y efectiva.
-        </p>
+    <div className="space-y-6 pb-32 sm:pb-20">
+      <section className="space-y-4">
+        <div className="rounded-3xl bg-gradient-to-br from-emerald-400 via-sky-500 to-indigo-500 p-5 text-white shadow-xl">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-white/70">
+            <span>Gastos</span>
+            <span className="rounded-full bg-white/20 px-3 py-1 text-[10px] tracking-[0.3em] text-white">Total</span>
+          </div>
+
+          <div className="mt-4 space-y-1">
+            <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">
+              {formatCurrency(monthlyTotal)}
+            </h1>
+            <p className="text-sm capitalize text-white/80">{monthText}</p>
+            <p className="text-xs text-white/70">Controla tus finanzas día a día.</p>
+          </div>
+
+          <div className="mt-5 flex items-center gap-2 overflow-x-auto pb-1">
+            {timeframeOptions.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setSelectedRange(option)}
+                className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                  selectedRange === option
+                    ? "bg-white text-sky-600 shadow-sm"
+                    : "bg-white/10 text-white/80 hover:bg-white/20"
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-6 flex flex-col items-center gap-6">
+            <div className="relative flex w-full justify-center">
+              {monthlyExpenses.length > 0 ? (
+                <ExpenseChart
+                  expenses={monthlyExpenses}
+                  className="h-[220px] w-[220px] sm:h-[260px] sm:w-[260px]"
+                  innerRadius={80}
+                  outerRadius={110}
+                  centerLabel={
+                    <div className="flex flex-col items-center text-white">
+                      <span className="text-xs uppercase tracking-[0.25em] text-white/70">
+                        {selectedRange}
+                      </span>
+                      <span className="mt-1 text-3xl font-semibold">
+                        {formatCurrency(monthlyTotal)}
+                      </span>
+                      <span className="mt-1 text-xs capitalize text-white/80">{monthText}</span>
+                    </div>
+                  }
+                />
+              ) : (
+                <div className="flex h-[220px] w-[220px] flex-col items-center justify-center rounded-full border border-white/30 bg-white/10 text-center text-white/80 sm:h-[260px] sm:w-[260px]">
+                  <span className="text-4xl">📊</span>
+                  <p className="mt-2 text-sm font-medium">Sin datos por ahora</p>
+                  <p className="mt-1 text-xs text-white/70">Agrega tu primer gasto</p>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowExpenseForm(true)}
+                className="absolute bottom-4 right-[22%] flex h-12 w-12 items-center justify-center rounded-full bg-white text-sky-600 shadow-lg transition hover:scale-105"
+              >
+                <Plus className="h-6 w-6" />
+                <span className="sr-only">Agregar gasto</span>
+              </button>
+            </div>
+
+            <MonthNavigator
+              selectedMonth={selectedMonth}
+              onMonthChange={setSelectedMonth}
+              variant="translucent"
+              className="w-full border-white/30"
+            />
+          </div>
+        </div>
       </section>
 
-      <MonthNavigator selectedMonth={selectedMonth} onMonthChange={setSelectedMonth} />
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-sky-600">
+              Resumen
+            </p>
+            <h2 className="text-xl font-semibold text-slate-900">Movimientos del mes</h2>
+          </div>
+          <Link
+            to="/projected"
+            className="inline-flex items-center gap-2 rounded-full bg-sky-50 px-4 py-2 text-xs font-semibold text-sky-600 transition hover:bg-sky-100"
+          >
+            <Sparkles className="h-4 w-4" /> Proyección
+          </Link>
+        </div>
 
-      <section className="grid gap-4 sm:grid-cols-2 sm:gap-6">
-        <Link to="/projected" className="group">
-          <Card className="overflow-hidden border-none bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md transition-transform group-hover:-translate-y-1 group-focus-visible:-translate-y-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <TrendingUp size={16} />
-                Total del mes
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1">
-              <p className="text-3xl font-semibold leading-tight">{formatCurrency(monthlyTotal)}</p>
-              <p className="text-xs uppercase tracking-wide text-blue-100">
-                {currentMonth
-                  ? "Mes actual"
-                  : selectedMonth.toLocaleDateString("es", { month: "long", year: "numeric" })}
+        <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-600">Gasto total</p>
+              <p className="text-2xl font-semibold text-slate-900">{formatCurrency(monthlyTotal)}</p>
+            </div>
+            <div className="rounded-2xl bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+              {categoriesWithTotals.length} categorías
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl bg-sky-50/70 p-4 text-sky-600">
+              <p className="text-xs font-semibold uppercase tracking-wide">Promedio diario</p>
+              <p className="mt-2 text-lg font-semibold">
+                {monthlyExpenses.length > 0
+                  ? formatCurrency(monthlyTotal / new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0).getDate())
+                  : formatCurrency(0)}
               </p>
-            </CardContent>
-          </Card>
-        </Link>
+            </div>
+            <div className="rounded-2xl bg-emerald-50/70 p-4 text-emerald-600">
+              <p className="text-xs font-semibold uppercase tracking-wide">Categoría destacada</p>
+              <p className="mt-2 text-lg font-semibold">
+                {categoriesWithTotals[0]?.name ?? "Sin datos"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <Card className="border border-blue-100 bg-white/90 shadow-sm backdrop-blur">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <PieChart size={18} className="text-blue-600" />
-              Categorías
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <CategoryList categories={categoriesWithTotals} />
-          </CardContent>
-        </Card>
+      <section className="space-y-4">
+        <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="flex items-center gap-2 text-base font-semibold text-slate-900">
+              <Calendar className="h-5 w-5 text-sky-500" /> Categorías del mes
+            </h3>
+            <span className="text-xs font-medium text-slate-500">
+              {formatCurrency(totalCategoriesAmount)} totales
+            </span>
+          </div>
+          <CategoryList categories={categoriesWithTotals} />
+        </div>
 
         {monthlyExpenses.length > 0 && (
-          <Card className="border border-blue-100 bg-white/90 shadow-sm backdrop-blur sm:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <PieChart size={18} className="text-blue-600" />
-                Distribución por categoría
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <ExpenseChart expenses={monthlyExpenses} />
-            </CardContent>
-          </Card>
+          <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="flex items-center gap-2 text-base font-semibold text-slate-900">
+                <Clock className="h-5 w-5 text-sky-500" /> Gastos recientes
+              </h3>
+              <span className="text-xs font-medium text-slate-500">
+                {monthlyExpenses.length} movimientos
+              </span>
+            </div>
+            <div className="space-y-3">
+              {monthlyExpenses.slice(0, 5).map((expense) => (
+                <button
+                  key={expense.id}
+                  onClick={() => setEditingExpense(expense)}
+                  className="flex w-full items-center justify-between rounded-2xl border border-slate-100 bg-slate-50/60 p-3 text-left transition hover:bg-slate-50"
+                >
+                  <div className="flex-1 pr-4">
+                    <p className="font-medium text-slate-900">{expense.description}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                      <Badge variant="secondary">{expense.category}</Badge>
+                      <span>{new Date(expense.date).toLocaleDateString("es")}</span>
+                    </div>
+                  </div>
+                  <div className="text-right text-lg font-semibold text-slate-900">
+                    {formatCurrency(expense.amount)}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {monthlyExpenses.length === 0 && (
+          <div className="rounded-3xl border border-dashed border-slate-200 bg-white/70 p-10 text-center shadow-sm">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-sky-50 text-sky-500">
+              <Plus className="h-6 w-6" />
+            </div>
+            <h3 className="mt-4 text-lg font-semibold text-slate-900">
+              No hay gastos registrados
+            </h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Comienza agregando tu primer gasto del mes para ver el resumen.
+            </p>
+          </div>
         )}
       </section>
 
-      {monthlyExpenses.length > 0 && (
-        <Card className="border border-blue-100 bg-white/90 shadow-sm backdrop-blur">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Calendar size={18} className="text-blue-600" />
-              Gastos recientes ({monthlyExpenses.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {monthlyExpenses.slice(0, 5).map((expense) => (
-              <button
-                key={expense.id}
-                onClick={() => setEditingExpense(expense)}
-                className="flex w-full items-center justify-between rounded-xl border border-blue-100 bg-blue-50/50 p-3 text-left transition-colors hover:bg-blue-50"
-              >
-                <div className="flex-1 pr-4">
-                  <p className="font-medium text-slate-900">{expense.description}</p>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                    <Badge variant="secondary">{expense.category}</Badge>
-                    <span>{new Date(expense.date).toLocaleDateString("es")}</span>
-                  </div>
-                </div>
-                <div className="text-right text-lg font-semibold text-slate-900">
-                  {formatCurrency(expense.amount)}
-                </div>
-              </button>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {monthlyExpenses.length === 0 && (
-        <Card className="border border-blue-100 bg-white/90 py-12 text-center shadow-sm backdrop-blur">
-          <CardContent className="space-y-3">
-            <DollarSign size={48} className="mx-auto text-blue-200" />
-            <h3 className="text-lg font-medium text-slate-900">No hay gastos registrados</h3>
-            <p className="text-sm text-slate-500">Comienza agregando tu primer gasto del mes.</p>
-          </CardContent>
-        </Card>
-      )}
-
-      <FloatingExpenseButton />
+      <ExpenseForm open={showExpenseForm} onClose={() => setShowExpenseForm(false)} />
 
       {editingExpense && (
         <EditExpenseModal

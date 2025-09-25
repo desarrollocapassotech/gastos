@@ -1,10 +1,16 @@
+import type { ReactNode } from "react";
 import type { TooltipProps } from "recharts";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Expense } from "@/hooks/useExpenseStore";
 import { formatCurrency } from "@/lib/formatters";
+import { cn } from "@/lib/utils";
 
 interface ExpenseChartProps {
   expenses: Expense[];
+  className?: string;
+  innerRadius?: number;
+  outerRadius?: number;
+  centerLabel?: ReactNode;
 }
 
 interface ChartDatum {
@@ -26,7 +32,13 @@ const COLORS = [
   "#2563EB",
 ];
 
-export const ExpenseChart = ({ expenses }: ExpenseChartProps) => {
+export const ExpenseChart = ({
+  expenses,
+  className,
+  innerRadius = 40,
+  outerRadius = 80,
+  centerLabel,
+}: ExpenseChartProps) => {
   const categoryTotals = expenses.reduce<Record<string, number>>((acc, expense) => {
     acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
     return acc;
@@ -69,15 +81,15 @@ export const ExpenseChart = ({ expenses }: ExpenseChartProps) => {
   };
 
   return (
-    <div className="h-64">
+    <div className={cn("relative h-64", className)}>
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={chartData}
             cx="50%"
             cy="50%"
-            innerRadius={40}
-            outerRadius={80}
+            innerRadius={innerRadius}
+            outerRadius={outerRadius}
             paddingAngle={2}
             dataKey="value"
           >
@@ -88,6 +100,11 @@ export const ExpenseChart = ({ expenses }: ExpenseChartProps) => {
           <Tooltip content={<CustomTooltip />} />
         </PieChart>
       </ResponsiveContainer>
+      {centerLabel && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-center">
+          {centerLabel}
+        </div>
+      )}
     </div>
   );
 };
