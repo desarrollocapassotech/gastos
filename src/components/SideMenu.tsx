@@ -39,12 +39,15 @@ const buildCurrentMonthNavigationItem = (): NavigationItem => {
   };
 };
 
+const linkBaseClasses =
+  "group relative flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition-all shadow-sm backdrop-blur";
+
 const getLinkClasses = ({ isActive }: { isActive: boolean }) =>
   cn(
-    "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+    linkBaseClasses,
     isActive
-      ? "bg-blue-600 text-white shadow-sm"
-      : "text-slate-600 hover:bg-blue-50 hover:text-blue-600"
+      ? "border-blue-500/70 bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-lg shadow-blue-500/30"
+      : "border-transparent bg-white/75 text-slate-600 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:text-blue-700 hover:shadow-md"
   );
 
 export function SideMenu() {
@@ -78,23 +81,31 @@ export function SideMenu() {
 
   return (
     <>
-      <nav className="hidden items-center gap-2 md:flex">
+      <nav className="hidden items-center gap-3 md:flex">
         {navigationItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
-            className={({ isActive }) =>
-              cn(getLinkClasses({ isActive }), "inline-flex items-center gap-2")
-            }
+            className={({ isActive }) => getLinkClasses({ isActive })}
           >
-            {item.icon && <item.icon className="h-4 w-4" />}
-            {item.label}
+            {item.icon && (
+              <span
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600 transition-all",
+                  "group-hover:border-blue-200 group-hover:bg-blue-100 group-hover:text-blue-700",
+                  "group-aria-[current=page]:border-white/40 group-aria-[current=page]:bg-white/20 group-aria-[current=page]:text-white group-aria-[current=page]:shadow-inner"
+                )}
+              >
+                <item.icon className="h-4 w-4" />
+              </span>
+            )}
+            <span className="text-sm font-semibold tracking-tight">{item.label}</span>
           </NavLink>
         ))}
         <Button
           variant="ghost"
           onClick={handleSignOut}
-          className="ml-2 inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-blue-600"
+          className="ml-2 inline-flex items-center gap-2 rounded-2xl border border-transparent bg-white/70 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:text-blue-700"
         >
           <LogOut className="h-4 w-4" />
           Cerrar sesión
@@ -122,20 +133,34 @@ export function SideMenu() {
                 Navegación
               </SheetTitle>
             </div>
-            <nav className="flex flex-col gap-2 px-6 pb-6">
-              {navigationItems.map((item) => (
-                <SheetClose asChild key={item.to}>
-                  <NavLink
-                    to={item.to}
-                    className={({ isActive }) =>
-                      cn(getLinkClasses({ isActive }), "flex items-center gap-3")
-                    }
-                  >
-                    {item.icon && <item.icon className="h-4 w-4" />}
-                    <span>{item.label}</span>
-                  </NavLink>
-                </SheetClose>
-              ))}
+            <nav className="px-6 pb-6">
+              <div className="flex flex-col gap-2 rounded-3xl border border-blue-100/70 bg-white/70 p-3 shadow-sm shadow-blue-100/60">
+                {navigationItems.map((item) => (
+                  <SheetClose asChild key={item.to}>
+                    <NavLink
+                      to={item.to}
+                      className={({ isActive }) =>
+                        cn(getLinkClasses({ isActive }), "w-full")
+                      }
+                    >
+                      {item.icon && (
+                        <span
+                          className={cn(
+                            "flex h-10 w-10 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600 transition-all",
+                            "group-hover:border-blue-200 group-hover:bg-blue-100 group-hover:text-blue-700",
+                            "group-aria-[current=page]:border-white/40 group-aria-[current=page]:bg-white/20 group-aria-[current=page]:text-white group-aria-[current=page]:shadow-inner"
+                          )}
+                        >
+                          <item.icon className="h-4 w-4" />
+                        </span>
+                      )}
+                      <span className="text-sm font-semibold tracking-tight">
+                        {item.label}
+                      </span>
+                    </NavLink>
+                  </SheetClose>
+                ))}
+              </div>
             </nav>
             {categoryItems.length > 0 && (
               <div className="space-y-4 px-6 pb-6">
@@ -145,7 +170,7 @@ export function SideMenu() {
                     Categorías
                   </p>
                 </div>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 rounded-3xl border border-blue-100/70 bg-white/70 p-3 shadow-sm shadow-blue-100/60">
                   {categoryItems.map((category) => (
                     <SheetClose asChild key={category.to}>
                       <NavLink
@@ -153,16 +178,27 @@ export function SideMenu() {
                         className={({ isActive }) =>
                           cn(
                             getLinkClasses({ isActive }),
-                            "flex items-center gap-3 text-left"
+                            "w-full text-left"
                           )
                         }
                       >
-                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-lg">
+                        <span
+                          className={cn(
+                            "flex h-10 w-10 items-center justify-center rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-blue-100 text-lg transition-all",
+                            "group-hover:border-blue-200 group-hover:shadow",
+                            "group-aria-[current=page]:border-white/40 group-aria-[current=page]:from-blue-500/30 group-aria-[current=page]:via-indigo-500/20 group-aria-[current=page]:to-indigo-400/30 group-aria-[current=page]:text-white"
+                          )}
+                        >
                           {category.icon}
                         </span>
-                        <span className="flex-1 text-sm font-medium">
-                          {category.label}
-                        </span>
+                        <div className="flex flex-1 flex-col">
+                          <span className="text-sm font-semibold tracking-tight">
+                            {category.label}
+                          </span>
+                          <span className="text-xs text-slate-500 transition-colors group-aria-[current=page]:text-white/80">
+                            Ver movimientos
+                          </span>
+                        </div>
                       </NavLink>
                     </SheetClose>
                   ))}
@@ -175,7 +211,7 @@ export function SideMenu() {
               <Button
                 onClick={handleSignOut}
                 variant="outline"
-                className="flex w-full items-center justify-center gap-2 rounded-full border-blue-200 text-slate-700 hover:bg-blue-50"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border-blue-200 bg-white/80 text-slate-700 transition-all hover:-translate-y-0.5 hover:bg-white hover:text-blue-700"
               >
                 <LogOut className="h-4 w-4" />
                 Cerrar sesión
