@@ -27,7 +27,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ open, onClose }) => {
   const { categories, addExpense, addInstallmentExpense } = useExpenseStore();
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!amount || !category || !description) {
@@ -60,22 +60,20 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ open, onClose }) => {
         return;
       }
       
-      addInstallmentExpense(
+      await addInstallmentExpense(
         numericAmount,
         category,
         description,
         installments,
         new Date(date)
       );
-      
+
       toast({
         title: "¡Éxito!",
         description: `Gasto agregado en ${installments} cuotas`,
       });
-
-      window.location.reload();
     } else {
-      addExpense({
+      await addExpense({
         amount: numericAmount,
         category,
         description,
