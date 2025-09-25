@@ -23,6 +23,7 @@ interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
+  profileChecked: boolean;
   signInWithGoogle: () => Promise<void>;
   signInWithPhone: (
     phone: string,
@@ -36,6 +37,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   loading: true,
+  profileChecked: false,
   signInWithGoogle: async () => {},
   signInWithPhone: async () => {
     throw new Error('signInWithPhone not implemented');
@@ -48,14 +50,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileChecked, setProfileChecked] = useState(false);
 
   const fetchProfile = async (uid: string) => {
+    setProfileChecked(false);
     const snap = await getDoc(doc(db, 'users', uid));
     if (snap.exists()) {
       setProfile(snap.data() as UserProfile);
     } else {
       setProfile(null);
     }
+    setProfileChecked(true);
   };
 
   useEffect(() => {
@@ -65,6 +70,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await fetchProfile(firebaseUser.uid);
       } else {
         setProfile(null);
+        setProfileChecked(true);
       }
       setLoading(false);
     });
@@ -97,6 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user,
         profile,
         loading,
+        profileChecked,
         signInWithGoogle,
         signInWithPhone,
         signOutUser,
