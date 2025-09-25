@@ -56,7 +56,7 @@ const Index = () => {
           </div>
 
           <div className="mt-4 space-y-1">
-            <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">
+            <h1 className="inline-flex items-center rounded-2xl bg-white/15 px-4 py-2 text-3xl font-semibold leading-tight shadow-inner sm:text-4xl">
               {formatCurrency(monthlyTotal)}
             </h1>
             <p className="text-sm capitalize text-white/80">{monthText}</p>
@@ -68,15 +68,15 @@ const Index = () => {
               {monthlyExpenses.length > 0 ? (
                 <ExpenseChart
                   expenses={monthlyExpenses}
-                  className="h-[220px] w-[220px] sm:h-[260px] sm:w-[260px]"
-                  innerRadius={80}
-                  outerRadius={110}
+                  className="h-[260px] w-[260px] sm:h-[320px] sm:w-[320px]"
+                  innerRadius={95}
+                  outerRadius={125}
                   centerLabel={
                     <div className="flex flex-col items-center text-white">
                       <span className="text-xs uppercase tracking-[0.25em] text-white/70">
                         {summaryLabel}
                       </span>
-                      <span className="mt-1 text-3xl font-semibold">
+                      <span className="mt-1 inline-flex items-center rounded-xl bg-white/15 px-4 py-1 text-3xl font-semibold leading-tight shadow-inner">
                         {formatCurrency(monthlyTotal)}
                       </span>
                       <span className="mt-1 text-xs capitalize text-white/80">{monthText}</span>
@@ -84,7 +84,7 @@ const Index = () => {
                   }
                 />
               ) : (
-                <div className="flex h-[220px] w-[220px] flex-col items-center justify-center rounded-full border border-white/30 bg-white/10 text-center text-white/80 sm:h-[260px] sm:w-[260px]">
+                <div className="flex h-[260px] w-[260px] flex-col items-center justify-center rounded-full border border-white/30 bg-white/10 text-center text-white/80 sm:h-[320px] sm:w-[320px]">
                   <span className="text-4xl">📊</span>
                   <p className="mt-2 text-sm font-medium">Sin datos por ahora</p>
                   <p className="mt-1 text-xs text-white/70">Agrega tu primer gasto</p>
