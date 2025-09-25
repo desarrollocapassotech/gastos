@@ -1,11 +1,26 @@
+import { useMemo, useState } from "react";
 import { ArrowLeft, Calendar, TrendingUp, TrendingDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useExpenseStore } from "@/hooks/useExpenseStore";
+import { useExpenseStore, Project } from "@/hooks/useExpenseStore";
 import { formatCurrency, formatMonth } from "@/lib/formatters";
 import { Link } from "react-router-dom";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const ProjectedExpenses = () => {
-  const { getTotalForMonth } = useExpenseStore();
+  const { getTotalForMonth, projects } = useExpenseStore();
+  const [selectedProjectId, setSelectedProjectId] = useState<string | "all">("all");
+
+  const projectFilter = selectedProjectId === "all" ? null : selectedProjectId;
+  const selectedProject: Project | null = useMemo(() => {
+    if (!projectFilter) return null;
+    return projects.find((project) => project.id === projectFilter) ?? null;
+  }, [projectFilter, projects]);
 
   const currentDate = new Date();
   const months = Array.from({ length: 12 }, (_, i) => {
@@ -18,7 +33,7 @@ const ProjectedExpenses = () => {
   const currentYear = currentDate.getFullYear();
 
   const getMonthData = (date: Date) => {
-    const total = getTotalForMonth(date);
+    const total = getTotalForMonth(date, projectFilter);
     const isPast = date < new Date(currentYear, currentMonth, 1);
     const isCurrent = date.getMonth() === currentMonth && date.getFullYear() === currentYear;
     const isFuture = date > new Date(currentYear, currentMonth + 1, 0);
@@ -82,6 +97,38 @@ const ProjectedExpenses = () => {
                 <TrendingUp className="h-4 w-4" /> Gastos futuros
               </p>
               <p className="mt-2 text-lg font-semibold text-white">{formatCurrency(totalFuture)}</p>
+            </div>
+          </div>
+          <div className="mt-4 rounded-2xl bg-white/15 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/70">
+              Proyecto seleccionado
+            </p>
+            <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-white/80">
+                {selectedProject ? selectedProject.name : "Todos los proyectos"}
+              </p>
+              <Select
+                value={selectedProjectId}
+                onValueChange={(value) => setSelectedProjectId(value as string | "all")}
+              >
+                <SelectTrigger className="h-10 w-full border-white/40 bg-white/20 text-left text-sm font-medium text-white sm:w-60">
+                  <SelectValue placeholder="Selecciona un proyecto" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los proyectos</SelectItem>
+                  {projects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="inline-flex h-2.5 w-2.5 rounded-full"
+                          style={{ backgroundColor: project.color }}
+                        />
+                        {project.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>

@@ -1,14 +1,28 @@
+import { useMemo, useState } from "react";
 import { ArrowLeft, Calendar, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useExpenseStore } from "@/hooks/useExpenseStore";
+import { Project, useExpenseStore } from "@/hooks/useExpenseStore";
 import { formatCurrency, formatMonth } from "@/lib/formatters";
 import { CategoryList } from "@/components/CategoryList";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const MonthDetail = () => {
   const { year, month } = useParams<{ year: string; month: string }>();
   const navigate = useNavigate();
-  const { getTotalForMonth, getCategoriesWithTotals } = useExpenseStore();
+  const { getTotalForMonth, getCategoriesWithTotals, projects } = useExpenseStore();
+  const [selectedProjectId, setSelectedProjectId] = useState<string | "all">("all");
+  const projectFilter = selectedProjectId === "all" ? null : selectedProjectId;
+  const selectedProject: Project | null = useMemo(() => {
+    if (!projectFilter) return null;
+    return projects.find((project) => project.id === projectFilter) ?? null;
+  }, [projectFilter, projects]);
 
   if (!year || !month) {
     return (
@@ -25,8 +39,8 @@ const MonthDetail = () => {
   }
 
   const selectedDate = new Date(parseInt(year), parseInt(month) - 1, 1);
-  const totalAmount = getTotalForMonth(selectedDate);
-  const categoriesWithTotals = getCategoriesWithTotals(selectedDate);
+  const totalAmount = getTotalForMonth(selectedDate, projectFilter);
+  const categoriesWithTotals = getCategoriesWithTotals(selectedDate, projectFilter);
   const monthText = formatMonth(selectedDate);
   const categoriesCount = categoriesWithTotals.length;
   const daysInMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
@@ -63,6 +77,9 @@ const MonthDetail = () => {
             <p className="text-xs text-white/70">
               {categoriesCount} {categoriesCount === 1 ? "categoría" : "categorías"} con gastos registrados
             </p>
+            <p className="text-xs text-white/70">
+              Proyecto: {selectedProject ? selectedProject.name : "Todos"}
+            </p>
           </div>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -74,6 +91,32 @@ const MonthDetail = () => {
               <p className="text-xs font-semibold uppercase tracking-wide text-white/70">Categoría destacada</p>
               <p className="mt-2 text-lg font-semibold text-white">{topCategory?.name ?? "Sin datos"}</p>
             </div>
+          </div>
+
+          <div className="mt-4 rounded-2xl bg-white/15 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/70">Filtrar por proyecto</p>
+            <Select
+              value={selectedProjectId}
+              onValueChange={(value) => setSelectedProjectId(value as string | "all")}
+            >
+              <SelectTrigger className="mt-2 h-10 border-white/40 bg-white/20 text-left text-sm font-medium text-white sm:w-64">
+                <SelectValue placeholder="Selecciona un proyecto" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los proyectos</SelectItem>
+                {projects.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="inline-flex h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: project.color }}
+                      />
+                      {project.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </section>

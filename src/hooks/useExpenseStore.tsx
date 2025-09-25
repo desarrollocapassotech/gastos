@@ -28,6 +28,7 @@ export interface Expense {
   category: string;
   description: string;
   date: string;
+  projectId?: string;
   installments?: {
     total: number;
     current: number;
@@ -40,6 +41,12 @@ export interface Category {
   name: string;
   color: string;
   icon: string;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  color: string;
 }
 
 const DEFAULT_CATEGORIES: Category[] = [
@@ -57,9 +64,16 @@ const DEFAULT_CATEGORIES: Category[] = [
   { id: '12', name: 'Otros', color: '#64748B', icon: '📦' },
 ];
 
+const DEFAULT_PROJECTS: Project[] = [
+  { id: 'personal', name: 'Gastos personales', color: '#2563EB' },
+  { id: 'business', name: 'Emprendimiento', color: '#0EA5E9' },
+  { id: 'new-home', name: 'Casa nueva', color: '#10B981' },
+];
+
 interface ExpenseContextValue {
   expenses: Expense[];
   categories: Category[];
+  projects: Project[];
   addExpense: (expenseData: Omit<Expense, 'id' | 'userId'>) => Promise<void>;
   updateExpense: (
     id: string,
@@ -70,7 +84,8 @@ interface ExpenseContextValue {
     category: string,
     description: string,
     installments: number,
-    startDate?: Date
+    startDate?: Date,
+    projectId?: string
   ) => Promise<void>;
   deleteExpense: (id: string) => Promise<void>;
   addCategory: (
@@ -78,12 +93,17 @@ interface ExpenseContextValue {
     color: string,
     icon: string
   ) => Promise<Category | null>;
+  addProject: (name: string, color: string) => Promise<Project | null>;
+  updateProject: (id: string, updatedData: Partial<Project>) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
   getExpensesForMonth: (date: Date) => Expense[];
-  getTotalForMonth: (date: Date) => number;
+  getExpensesForMonthByProject: (date: Date, projectId?: string | null) => Expense[];
+  getTotalForMonth: (date: Date, projectId?: string | null) => number;
   getCategoriesWithTotals: (
-    date: Date
+    date: Date,
+    projectId?: string | null
   ) => (Category & { total: number })[];
-  getProjectedExpenses: () => Record<string, number>;
+  getProjectedExpenses: (projectId?: string | null) => Record<string, number>;
 }
 
 const ExpenseContext = createContext<ExpenseContextValue | null>(null);
@@ -91,6 +111,7 @@ const ExpenseContext = createContext<ExpenseContextValue | null>(null);
 export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
+  const [projects, setProjects] = useState<Project[]>(DEFAULT_PROJECTS);
   const { user } = useAuth();
 
   // Load data from Firestore when user changes
@@ -98,6 +119,7 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
     if (!user) {
       setExpenses([]);
       setCategories(DEFAULT_CATEGORIES);
+      setProjects(DEFAULT_PROJECTS);
       return;
     }
 
@@ -117,6 +139,24 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch (e) {
         console.error('Error loading categories', e);
+      }
+
+      try {
+        const projectCol = collection(db, 'users', user.uid, 'projects');
+        const projectSnapshot = await getDocs(projectCol);
+        if (projectSnapshot.empty) {
+          for (const project of DEFAULT_PROJECTS) {
+            await setDoc(doc(projectCol, project.id), project);
+          }
+          setProjects(DEFAULT_PROJECTS);
+        } else {
+          const loadedProjects = projectSnapshot.docs.map(
+            (d) => d.data() as Project
+          );
+          setProjects(loadedProjects);
+        }
+      } catch (e) {
+        console.error('Error loading projects', e);
       }
 
       try {
@@ -140,8 +180,10 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
   const addExpense = useCallback(
     async (expenseData: Omit<Expense, 'id' | 'userId'>) => {
       if (!user) return;
+      const fallbackProjectId = expenseData.projectId || projects[0]?.id;
       const newExpense: Expense = {
         ...expenseData,
+        projectId: fallbackProjectId,
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         userId: user.uid,
       };
@@ -164,7 +206,7 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
         console.error('Error adding expense', e);
       }
     },
-    [user]
+    [projects, user]
   );
 
   const updateExpense = useCallback(
@@ -211,7 +253,8 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       category: string,
       description: string,
       installments: number,
-      startDate: Date = new Date()
+      startDate: Date = new Date(),
+      projectId?: string
     ) => {
       if (!user) return;
       const monthlyAmount = amount / installments;
@@ -228,6 +271,7 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
           description: `${description} (Cuota ${i + 1}/${installments})`,
           date: installmentDate.toISOString().split('T')[0],
           userId: user.uid,
+          projectId,
           installments: {
             total: installments,
             current: i + 1,
@@ -303,6 +347,67 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
     [user]
   );
 
+  const addProject = useCallback(
+    async (name: string, color: string) => {
+      if (!user) return null;
+      const newProject: Project = {
+        id: Date.now().toString(),
+        name,
+        color,
+      };
+      try {
+        await setDoc(
+          doc(db, 'users', user.uid, 'projects', newProject.id),
+          newProject
+        );
+        setProjects((prev) => [...prev, newProject]);
+      } catch (e) {
+        console.error('Error adding project', e);
+      }
+      return newProject;
+    },
+    [user]
+  );
+
+  const updateProject = useCallback(
+    async (id: string, updatedData: Partial<Project>) => {
+      if (!user) return;
+      try {
+        await updateDoc(
+          doc(db, 'users', user.uid, 'projects', id),
+          updatedData as Record<string, unknown>
+        );
+        setProjects((prev) =>
+          prev.map((project) =>
+            project.id === id ? { ...project, ...updatedData } : project
+          )
+        );
+      } catch (e) {
+        console.error('Error updating project', e);
+      }
+    },
+    [user]
+  );
+
+  const deleteProject = useCallback(
+    async (id: string) => {
+      if (!user) return;
+      const hasRelatedExpenses = expenses.some(
+        (expense) => expense.projectId === id
+      );
+      if (hasRelatedExpenses) {
+        throw new Error('No puedes eliminar un proyecto con gastos asociados.');
+      }
+      try {
+        await deleteDoc(doc(db, 'users', user.uid, 'projects', id));
+        setProjects((prev) => prev.filter((project) => project.id !== id));
+      } catch (e) {
+        console.error('Error deleting project', e);
+      }
+    },
+    [expenses, user]
+  );
+
   const getExpensesForMonth = useCallback(
     (date: Date) => {
       const year = date.getFullYear();
@@ -319,19 +424,32 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
     [expenses]
   );
 
-  const getTotalForMonth = useCallback(
-    (date: Date) => {
-      return getExpensesForMonth(date).reduce(
-        (total, expense) => total + expense.amount,
-        0
+  const getExpensesForMonthByProject = useCallback(
+    (date: Date, projectId?: string | null) => {
+      const monthlyExpenses = getExpensesForMonth(date);
+      if (!projectId) {
+        return monthlyExpenses;
+      }
+      return monthlyExpenses.filter(
+        (expense) => expense.projectId === projectId
       );
     },
     [getExpensesForMonth]
   );
 
+  const getTotalForMonth = useCallback(
+    (date: Date, projectId?: string | null) => {
+      return getExpensesForMonthByProject(date, projectId).reduce(
+        (total, expense) => total + expense.amount,
+        0
+      );
+    },
+    [getExpensesForMonthByProject]
+  );
+
   const getCategoriesWithTotals = useCallback(
-    (date: Date) => {
-      const monthlyExpenses = getExpensesForMonth(date);
+    (date: Date, projectId?: string | null) => {
+      const monthlyExpenses = getExpensesForMonthByProject(date, projectId);
       const categoryTotals = monthlyExpenses.reduce((acc, expense) => {
         acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
         return acc;
@@ -345,13 +463,14 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
         }))
         .sort((a, b) => b.total - a.total);
     },
-    [categories, getExpensesForMonth]
+    [categories, getExpensesForMonthByProject]
   );
 
-  const getProjectedExpenses = useCallback(() => {
+  const getProjectedExpenses = useCallback((projectId?: string | null) => {
     const monthlyTotals: Record<string, number> = {};
 
     expenses.forEach((expense) => {
+      if (projectId && expense.projectId !== projectId) return;
       const monthKey = expense.date.substring(0, 7); // YYYY-MM
       monthlyTotals[monthKey] =
         (monthlyTotals[monthKey] || 0) + expense.amount;
@@ -364,12 +483,17 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
     () => ({
       expenses,
       categories,
+      projects,
       addExpense,
       updateExpense,
       addInstallmentExpense,
       deleteExpense,
       addCategory,
+      addProject,
+      updateProject,
+      deleteProject,
       getExpensesForMonth,
+      getExpensesForMonthByProject,
       getTotalForMonth,
       getCategoriesWithTotals,
       getProjectedExpenses,
@@ -377,12 +501,17 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
     [
       expenses,
       categories,
+      projects,
       addExpense,
       updateExpense,
       addInstallmentExpense,
       deleteExpense,
       addCategory,
+      addProject,
+      updateProject,
+      deleteProject,
       getExpensesForMonth,
+      getExpensesForMonthByProject,
       getTotalForMonth,
       getCategoriesWithTotals,
       getProjectedExpenses,

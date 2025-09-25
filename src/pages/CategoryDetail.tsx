@@ -1,27 +1,49 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Expense, useExpenseStore } from "@/hooks/useExpenseStore";
+import { Expense, Project, useExpenseStore } from "@/hooks/useExpenseStore";
 import { formatCurrency } from "@/lib/formatters";
 import { EditExpenseModal } from "@/components/EditExpenseModal";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const CategoryDetail = () => {
   const { category } = useParams<{ category: string }>();
   const navigate = useNavigate();
-  const { expenses, categories, updateExpense } = useExpenseStore();
+  const { expenses, categories, updateExpense, projects } = useExpenseStore();
+  const [selectedProjectId, setSelectedProjectId] = useState<string | "all">("all");
 
   const selectedMonth = new Date();
   const monthText = selectedMonth.toLocaleDateString("es", { month: "long", year: "numeric" });
 
   const categoryInfo = categories.find((cat) => cat.name === category);
-  const categoryExpenses = expenses.filter(
-    (expense) =>
-      expense.category === category &&
-      new Date(expense.date).getMonth() === selectedMonth.getMonth() &&
-      new Date(expense.date).getFullYear() === selectedMonth.getFullYear(),
+  const projectFilter = selectedProjectId === "all" ? null : selectedProjectId;
+  const projectMap = useMemo(
+    () =>
+      projects.reduce<Record<string, Project>>((acc, project) => {
+        acc[project.id] = project;
+        return acc;
+      }, {}),
+    [projects]
   );
+  const selectedProject = projectFilter ? projectMap[projectFilter] ?? null : null;
+  const categoryExpenses = expenses.filter((expense) => {
+    const expenseDate = new Date(expense.date);
+    const matchesProject = projectFilter ? expense.projectId === projectFilter : true;
+    return (
+      expense.category === category &&
+      expenseDate.getMonth() === selectedMonth.getMonth() &&
+      expenseDate.getFullYear() === selectedMonth.getFullYear() &&
+      matchesProject
+    );
+  });
 
   const totalAmount = categoryExpenses.reduce((sum, expense) => sum + expense.amount, 0);
   const expensesCount = categoryExpenses.length;
@@ -81,7 +103,10 @@ const CategoryDetail = () => {
               <p className="text-xs text-white/70">
                 {expensesCount} {expensesCount === 1 ? "gasto" : "gastos"} registrados este mes
               </p>
-            </div>
+              <p className="text-xs text-white/70">
+                Proyecto: {selectedProject ? selectedProject.name : "Todos"}
+              </p>
+          </div>
           </div>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -105,13 +130,38 @@ const CategoryDetail = () => {
 
       <section className="space-y-4">
         <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-base font-semibold text-slate-900">
-              <Calendar className="h-5 w-5 text-sky-500" /> Detalle de gastos
-            </h2>
-            <span className="text-xs font-medium text-slate-500">
-              {expensesCount} {expensesCount === 1 ? "gasto" : "gastos"}
-            </span>
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-sky-500" />
+              <h2 className="text-base font-semibold text-slate-900">Detalle de gastos</h2>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <span className="text-xs font-medium text-slate-500">
+                {expensesCount} {expensesCount === 1 ? "gasto" : "gastos"}
+              </span>
+              <Select
+                value={selectedProjectId}
+                onValueChange={(value) => setSelectedProjectId(value as string | "all")}
+              >
+                <SelectTrigger className="h-9 w-full border-slate-200 text-left text-xs font-medium text-slate-600 sm:w-56">
+                  <SelectValue placeholder="Filtrar por proyecto" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los proyectos</SelectItem>
+                  {projects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="inline-flex h-2.5 w-2.5 rounded-full"
+                          style={{ backgroundColor: project.color }}
+                        />
+                        {project.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {categoryExpenses.length === 0 ? (
@@ -136,6 +186,11 @@ const CategoryDetail = () => {
                           <Calendar size={14} />
                           {new Date(expense.date).toLocaleDateString("es")}
                         </span>
+                        {expense.projectId && projectMap[expense.projectId] && (
+                          <Badge variant="outline" className="text-xs">
+                            {projectMap[expense.projectId].name}
+                          </Badge>
+                        )}
                         {expense.installments && (
                           <Badge variant="outline" className="text-xs">
                             Cuota {expense.installments.current}/{expense.installments.total}

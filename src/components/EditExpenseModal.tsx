@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,14 @@ import { Label } from '@/components/ui/label';
 import { formatCurrencyInput, parseCurrencyInput } from '@/lib/formatters';
 import { Loader2 } from 'lucide-react';
 import { DatePicker } from '@/components/DatePicker';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useExpenseStore, Project } from '@/hooks/useExpenseStore';
 
 interface Expense {
   id: string;
@@ -13,6 +21,7 @@ interface Expense {
   category: string;
   description: string;
   date: string;
+  projectId?: string;
 }
 
 interface EditExpenseModalProps {
@@ -28,33 +37,33 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
   onSave,
   onClose,
 }) => {
+  const { projects } = useExpenseStore();
   const [amount, setAmount] = useState(formatCurrencyInput(expense.amount.toFixed(2)));
   const [category, setCategory] = useState(expense.category);
   const [description, setDescription] = useState(expense.description);
   const [date, setDate] = useState(expense.date);
+  const [projectId, setProjectId] = useState<string | undefined>(expense.projectId);
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (!projectId && projects.length > 0) {
+      setProjectId(projects[0].id);
+    }
+  }, [projectId, projects]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      amount: parseCurrencyInput(amount),
-      category,
-      description,
-      date,
-    });
-    onClose();
-
     setIsSaving(true);
 
     try {
       await onSave({
-        amount: parseFloat(amount),
+        amount: parseCurrencyInput(amount),
         category,
         description,
         date,
+        projectId,
       });
       onClose();
-      window.location.reload();
     } catch (error) {
       console.error('Error updating expense', error);
     } finally {
@@ -93,6 +102,31 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
                 required
                 placeholder="Ejemplo: Alimentación"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="project">Proyecto</Label>
+              <Select
+                value={projectId ?? projects[0]?.id ?? ''}
+                onValueChange={(value) => setProjectId(value || undefined)}
+              >
+                <SelectTrigger id="project" className="h-10">
+                  <SelectValue placeholder="Selecciona un proyecto" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map((project: Project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="inline-flex h-2.5 w-2.5 rounded-full"
+                          style={{ backgroundColor: project.color }}
+                        />
+                        {project.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

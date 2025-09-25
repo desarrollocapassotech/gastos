@@ -6,6 +6,7 @@ import {
   CalendarRange,
   Sparkles,
   ChevronDown,
+  FolderKanban,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,7 @@ export function SideMenu() {
     { to: "/", label: "Inicio", icon: LayoutDashboard },
     buildCurrentMonthNavigationItem(),
     { to: "/projected", label: "Gastos proyectados", icon: Sparkles },
+    { to: "/projects", label: "Proyectos", icon: FolderKanban },
   ];
 
   const categoryItems: CategoryNavigationItem[] = categories
