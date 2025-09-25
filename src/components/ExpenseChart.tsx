@@ -1,54 +1,70 @@
-
-import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { Expense } from '@/hooks/useExpenseStore';
-import { formatCurrency } from '@/lib/formatters';
+import type { TooltipProps } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { Expense } from "@/hooks/useExpenseStore";
+import { formatCurrency } from "@/lib/formatters";
 
 interface ExpenseChartProps {
   expenses: Expense[];
 }
 
+interface ChartDatum {
+  name: string;
+  value: number;
+  percentage: string;
+}
+
 const COLORS = [
-  '#10B981', '#3B82F6', '#EF4444', '#8B5CF6', '#F59E0B', 
-  '#EC4899', '#6366F1', '#64748B', '#059669', '#2563EB'
+  "#10B981",
+  "#3B82F6",
+  "#EF4444",
+  "#8B5CF6",
+  "#F59E0B",
+  "#EC4899",
+  "#6366F1",
+  "#64748B",
+  "#059669",
+  "#2563EB",
 ];
 
-export const ExpenseChart: React.FC<ExpenseChartProps> = ({ expenses }) => {
-  const categoryTotals = expenses.reduce((acc, expense) => {
+export const ExpenseChart = ({ expenses }: ExpenseChartProps) => {
+  const categoryTotals = expenses.reduce<Record<string, number>>((acc, expense) => {
     acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
     return acc;
-  }, {} as Record<string, number>);
+  }, {});
 
-  const chartData = Object.entries(categoryTotals)
+  const totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+
+  const chartData: ChartDatum[] = Object.entries(categoryTotals)
     .map(([category, total]) => ({
       name: category,
       value: total,
-      percentage: ((total / expenses.reduce((sum, exp) => sum + exp.amount, 0)) * 100).toFixed(1),
+      percentage: ((total / totalAmount) * 100).toFixed(1),
     }))
     .sort((a, b) => b.value - a.value);
 
   if (chartData.length === 0) {
     return (
-      <div className="h-64 flex items-center justify-center text-gray-500">
+      <div className="flex h-64 items-center justify-center text-slate-500">
         <div className="text-center">
-          <div className="text-4xl mb-2">📊</div>
+          <div className="mb-2 text-4xl">📊</div>
           <p>No hay datos para mostrar</p>
         </div>
       </div>
     );
   }
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+      const data = payload[0].payload as ChartDatum;
       return (
-        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-medium">{data.name}</p>
-          <p className="text-blue-600">{formatCurrency(data.value)}</p>
-          <p className="text-gray-500 text-sm">{data.percentage}%</p>
+        <div className="rounded-lg border border-blue-100 bg-white p-3 shadow-md">
+          <p className="font-medium text-slate-900">{data.name}</p>
+          <p className="text-sm text-blue-600">{formatCurrency(data.value)}</p>
+          <p className="text-xs text-slate-500">{data.percentage}%</p>
         </div>
       );
     }
+
     return null;
   };
 

@@ -9,9 +9,9 @@ export const FloatingExpenseButton = () => {
 
   return (
     <>
-      <Button 
+      <Button
         onClick={() => setShowExpenseForm(true)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 z-50"
+        className="fixed bottom-24 right-5 z-50 h-14 w-14 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg hover:from-blue-600 hover:to-blue-700 sm:bottom-8 sm:right-8"
         size="icon"
       >
         <Plus size={24} />
