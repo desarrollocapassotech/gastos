@@ -1,5 +1,12 @@
 import type React from "react";
-import { Menu, LogOut, LayoutDashboard, CalendarRange, Sparkles } from "lucide-react";
+import {
+  Menu,
+  LogOut,
+  LayoutDashboard,
+  CalendarRange,
+  Sparkles,
+  ChevronDown,
+} from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +17,11 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { formatMonth } from "@/lib/formatters";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,14 +51,14 @@ const buildCurrentMonthNavigationItem = (): NavigationItem => {
 };
 
 const linkBaseClasses =
-  "group relative flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition-all shadow-sm backdrop-blur";
+  "group relative flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all md:w-auto md:rounded-2xl md:px-4 md:py-3 md:font-semibold";
 
 const getLinkClasses = ({ isActive }: { isActive: boolean }) =>
   cn(
     linkBaseClasses,
     isActive
-      ? "border-blue-500/70 bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-lg shadow-blue-500/30"
-      : "border-transparent bg-white/75 text-slate-600 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:text-blue-700 hover:shadow-md"
+      ? "border border-blue-500/70 bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-lg shadow-blue-500/30"
+      : "border border-slate-200/70 bg-white/80 text-slate-600 shadow-sm hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:text-blue-700 hover:shadow-md md:border-transparent md:bg-white/75 md:backdrop-blur"
   );
 
 export function SideMenu() {
@@ -91,7 +102,7 @@ export function SideMenu() {
             {item.icon && (
               <span
                 className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600 transition-all",
+                  "flex h-9 w-9 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600 transition-all md:h-10 md:w-10",
                   "group-hover:border-blue-200 group-hover:bg-blue-100 group-hover:text-blue-700",
                   "group-aria-[current=page]:border-white/40 group-aria-[current=page]:bg-white/20 group-aria-[current=page]:text-white group-aria-[current=page]:shadow-inner"
                 )}
@@ -133,20 +144,18 @@ export function SideMenu() {
                 Navegación
               </SheetTitle>
             </div>
-            <nav className="px-6 pb-6">
-              <div className="flex flex-col gap-2 rounded-3xl border border-blue-100/70 bg-white/70 p-3 shadow-sm shadow-blue-100/60">
+            <nav className="space-y-4 px-6 pb-4">
+              <div className="flex flex-col gap-2">
                 {navigationItems.map((item) => (
                   <SheetClose asChild key={item.to}>
                     <NavLink
                       to={item.to}
-                      className={({ isActive }) =>
-                        cn(getLinkClasses({ isActive }), "w-full")
-                      }
+                      className={({ isActive }) => getLinkClasses({ isActive })}
                     >
                       {item.icon && (
                         <span
                           className={cn(
-                            "flex h-10 w-10 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600 transition-all",
+                            "flex h-9 w-9 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600 transition-all md:h-10 md:w-10",
                             "group-hover:border-blue-200 group-hover:bg-blue-100 group-hover:text-blue-700",
                             "group-aria-[current=page]:border-white/40 group-aria-[current=page]:bg-white/20 group-aria-[current=page]:text-white group-aria-[current=page]:shadow-inner"
                           )}
@@ -161,50 +170,54 @@ export function SideMenu() {
                   </SheetClose>
                 ))}
               </div>
+              {categoryItems.length > 0 && (
+                <Collapsible className="overflow-hidden rounded-2xl border border-blue-100/80 bg-white/80 shadow-sm">
+                  <CollapsibleTrigger className="group flex w-full items-center justify-between gap-3 px-4 py-3 text-left">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-slate-700">
+                        Categorías
+                      </span>
+                      <span className="text-xs font-medium text-slate-400">
+                        {categoryItems.length} disponibles
+                      </span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-slate-500 transition-transform group-data-[state=open]:rotate-180" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="px-3 pb-3 pt-1">
+                    <div className="flex max-h-80 flex-col gap-2 overflow-y-auto pr-1">
+                      {categoryItems.map((category) => (
+                        <SheetClose asChild key={category.to}>
+                          <NavLink
+                            to={category.to}
+                            className={({ isActive }) =>
+                              cn(getLinkClasses({ isActive }), "text-left")
+                            }
+                          >
+                            <span
+                              className={cn(
+                                "flex h-9 w-9 items-center justify-center rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-blue-100 text-base transition-all md:h-10 md:w-10 md:text-lg",
+                                "group-hover:border-blue-200 group-hover:shadow",
+                                "group-aria-[current=page]:border-white/40 group-aria-[current=page]:from-blue-500/30 group-aria-[current=page]:via-indigo-500/20 group-aria-[current=page]:to-indigo-400/30 group-aria-[current=page]:text-white"
+                              )}
+                            >
+                              {category.icon}
+                            </span>
+                            <div className="flex flex-1 flex-col">
+                              <span className="text-sm font-semibold tracking-tight">
+                                {category.label}
+                              </span>
+                              <span className="text-xs text-slate-500 transition-colors group-aria-[current=page]:text-white/80">
+                                Ver movimientos
+                              </span>
+                            </div>
+                          </NavLink>
+                        </SheetClose>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
             </nav>
-            {categoryItems.length > 0 && (
-              <div className="space-y-4 px-6 pb-6">
-                <div className="space-y-2">
-                  <Separator className="border-blue-100/80" />
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Categorías
-                  </p>
-                </div>
-                <div className="flex flex-col gap-2 rounded-3xl border border-blue-100/70 bg-white/70 p-3 shadow-sm shadow-blue-100/60">
-                  {categoryItems.map((category) => (
-                    <SheetClose asChild key={category.to}>
-                      <NavLink
-                        to={category.to}
-                        className={({ isActive }) =>
-                          cn(
-                            getLinkClasses({ isActive }),
-                            "w-full text-left"
-                          )
-                        }
-                      >
-                        <span
-                          className={cn(
-                            "flex h-10 w-10 items-center justify-center rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-blue-100 text-lg transition-all",
-                            "group-hover:border-blue-200 group-hover:shadow",
-                            "group-aria-[current=page]:border-white/40 group-aria-[current=page]:from-blue-500/30 group-aria-[current=page]:via-indigo-500/20 group-aria-[current=page]:to-indigo-400/30 group-aria-[current=page]:text-white"
-                          )}
-                        >
-                          {category.icon}
-                        </span>
-                        <div className="flex flex-1 flex-col">
-                          <span className="text-sm font-semibold tracking-tight">
-                            {category.label}
-                          </span>
-                          <span className="text-xs text-slate-500 transition-colors group-aria-[current=page]:text-white/80">
-                            Ver movimientos
-                          </span>
-                        </div>
-                      </NavLink>
-                    </SheetClose>
-                  ))}
-                </div>
-              </div>
-            )}
           </ScrollArea>
           <div className="border-t border-blue-100/60 px-6 py-4">
             <SheetClose asChild>

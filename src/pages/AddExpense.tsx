@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Calendar, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -24,12 +24,18 @@ const AddExpense = () => {
   const { categories, addExpense, addInstallmentExpense } = useExpenseStore();
   const { toast } = useToast();
 
+  const amountInputRef = useRef<HTMLInputElement>(null);
+
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [hasInstallments, setHasInstallments] = useState(false);
   const [installmentCount, setInstallmentCount] = useState("2");
+
+  useEffect(() => {
+    amountInputRef.current?.focus();
+  }, []);
 
   const quickDateOptions = useMemo(() => {
     const today = new Date();
@@ -133,7 +139,7 @@ const AddExpense = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 pb-16">
+    <form onSubmit={handleSubmit} className="space-y-8 pb-40">
       <div className="rounded-3xl bg-gradient-to-br from-emerald-400 via-sky-500 to-indigo-500 p-6 text-white shadow-xl">
         <button
           type="button"
@@ -151,6 +157,7 @@ const AddExpense = () => {
             <input
               type="text"
               inputMode="decimal"
+              ref={amountInputRef}
               value={amount}
               onChange={(event) => setAmount(formatCurrencyInput(event.target.value))}
               placeholder="0,00"
@@ -304,15 +311,13 @@ const AddExpense = () => {
         </Card>
       </section>
 
-      <div className="flex gap-3">
-        <Button type="button" variant="outline" className="flex-1" onClick={() => navigate(-1)}>
-          Cancelar
-        </Button>
+      <div className="h-24" />
+      <div className="fixed inset-x-0 bottom-6 flex justify-center px-4 sm:px-6">
         <Button
           type="submit"
-          className="flex-1 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-base font-semibold shadow-lg transition hover:from-blue-600 hover:to-blue-700"
+          className="w-full max-w-md rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-base font-semibold shadow-lg transition hover:from-blue-600 hover:to-blue-700"
         >
-          Añadir gasto
+          Guardar gasto
         </Button>
       </div>
     </form>
