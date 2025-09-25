@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useExpenseStore } from "@/hooks/useExpenseStore";
 import { useToast } from "@/hooks/use-toast";
+import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from "@/lib/formatters";
 
 const formatDateLabel = (date: Date) =>
   date.toLocaleDateString("es", {
@@ -45,6 +46,17 @@ const AddExpense = () => {
     });
   }, []);
 
+  const parsedAmount = parseCurrencyInput(amount);
+  const hasAmountValue = amount !== "";
+  const installmentsNumber = parseInt(installmentCount, 10);
+  const installmentPreview =
+    hasAmountValue &&
+    !Number.isNaN(parsedAmount) &&
+    !Number.isNaN(installmentsNumber) &&
+    installmentsNumber > 0
+      ? formatCurrency(parsedAmount / installmentsNumber)
+      : null;
+
   const resetForm = () => {
     setAmount("");
     setCategory(null);
@@ -66,7 +78,7 @@ const AddExpense = () => {
       return;
     }
 
-    const numericAmount = parseFloat(amount);
+    const numericAmount = parseCurrencyInput(amount);
     if (Number.isNaN(numericAmount) || numericAmount <= 0) {
       toast({
         title: "Monto inválido",
@@ -77,8 +89,11 @@ const AddExpense = () => {
     }
 
     if (hasInstallments) {
-      const installments = parseInt(installmentCount, 10);
-      if (installments < 2 || installments > 60) {
+      if (
+        Number.isNaN(installmentsNumber) ||
+        installmentsNumber < 2 ||
+        installmentsNumber > 60
+      ) {
         toast({
           title: "Cuotas inválidas",
           description: "El número de cuotas debe estar entre 2 y 60",
@@ -91,13 +106,13 @@ const AddExpense = () => {
         numericAmount,
         category,
         description,
-        installments,
+        installmentsNumber,
         new Date(date)
       );
 
       toast({
         title: "Gasto agregado",
-        description: `Distribuido en ${installments} cuotas`,
+        description: `Distribuido en ${installmentsNumber} cuotas`,
       });
     } else {
       await addExpense({
@@ -134,11 +149,11 @@ const AddExpense = () => {
           </div>
           <div className="flex items-baseline gap-2">
             <input
-              type="number"
+              type="text"
               inputMode="decimal"
               value={amount}
-              onChange={(event) => setAmount(event.target.value)}
-              placeholder="0"
+              onChange={(event) => setAmount(formatCurrencyInput(event.target.value))}
+              placeholder="0,00"
               className="w-full bg-transparent text-4xl font-semibold text-white placeholder:text-white/70 focus:outline-none"
             />
             <span className="text-sm font-semibold uppercase tracking-[0.3em] text-white/80">
@@ -281,10 +296,8 @@ const AddExpense = () => {
                   ))}
                 </SelectContent>
               </Select>
-              {amount && (
-                <p className="text-xs text-slate-500">
-                  Cuota estimada: ${(parseFloat(amount) / parseInt(installmentCount, 10)).toFixed(2)}
-                </p>
+              {installmentPreview && (
+                <p className="text-xs text-slate-500">Cuota estimada: {installmentPreview}</p>
               )}
             </div>
           )}
