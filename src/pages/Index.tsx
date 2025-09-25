@@ -1,19 +1,18 @@
 import { useMemo, useState } from "react";
-import { Calendar, Clock, Plus, Sparkles } from "lucide-react";
+import { Calendar, Plus, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ExpenseChart } from "@/components/ExpenseChart";
 import { CategoryList } from "@/components/CategoryList";
 import { MonthNavigator } from "@/components/MonthNavigator";
 import { Expense, useExpenseStore } from "@/hooks/useExpenseStore";
 import { formatCurrency } from "@/lib/formatters";
 import { EditExpenseModal } from "@/components/EditExpenseModal";
-import { ExpenseForm } from "@/components/ExpenseForm";
 
 const Index = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const [showExpenseForm, setShowExpenseForm] = useState(false);
   const { getExpensesForMonth, getTotalForMonth, getCategoriesWithTotals, updateExpense } = useExpenseStore();
+  const navigate = useNavigate();
 
   const monthlyExpenses = getExpensesForMonth(selectedMonth);
   const monthlyTotal = getTotalForMonth(selectedMonth);
@@ -79,7 +78,7 @@ const Index = () => {
               )}
               <button
                 type="button"
-                onClick={() => setShowExpenseForm(true)}
+                onClick={() => navigate("/expenses/new")}
                 className="absolute bottom-4 right-[22%] flex h-12 w-12 items-center justify-center rounded-full bg-white text-sky-600 shadow-lg transition hover:scale-105"
               >
                 <Plus className="h-6 w-6" />
@@ -141,8 +140,6 @@ const Index = () => {
           </div>
         )}
       </section>
-
-      <ExpenseForm open={showExpenseForm} onClose={() => setShowExpenseForm(false)} />
 
       {editingExpense && (
         <EditExpenseModal
