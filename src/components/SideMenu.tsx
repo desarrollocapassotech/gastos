@@ -217,20 +217,20 @@ export function SideMenu() {
                   </CollapsibleContent>
                 </Collapsible>
               )}
+              <div className="pt-2">
+                <SheetClose asChild>
+                  <Button
+                    onClick={handleSignOut}
+                    variant="outline"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl border-blue-200 bg-white/80 text-slate-700 transition-all hover:-translate-y-0.5 hover:bg-white hover:text-blue-700"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Cerrar sesión
+                  </Button>
+                </SheetClose>
+              </div>
             </nav>
           </ScrollArea>
-          <div className="border-t border-blue-100/60 px-6 py-4">
-            <SheetClose asChild>
-              <Button
-                onClick={handleSignOut}
-                variant="outline"
-                className="flex w-full items-center justify-center gap-2 rounded-2xl border-blue-200 bg-white/80 text-slate-700 transition-all hover:-translate-y-0.5 hover:bg-white hover:text-blue-700"
-              >
-                <LogOut className="h-4 w-4" />
-                Cerrar sesión
-              </Button>
-            </SheetClose>
-          </div>
         </SheetContent>
       </Sheet>
     </>
