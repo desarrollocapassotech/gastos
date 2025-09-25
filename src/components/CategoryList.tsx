@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { formatCurrency } from "@/lib/formatters";
+import { cn } from "@/lib/utils";
 
 interface Category {
   id: string;
@@ -30,28 +31,62 @@ export const CategoryList: React.FC<CategoryListProps> = ({ categories }) => {
     navigate(`/category/${encodeURIComponent(categoryName)}`);
   };
 
+  const totalAmount = categories.reduce((sum, category) => sum + category.total, 0);
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {categories.map((category) => (
         <button
           key={category.id}
           type="button"
           onClick={() => handleCategoryClick(category.name)}
-          className="flex w-full items-center justify-between rounded-xl border border-blue-100 bg-blue-50/40 p-3 text-left transition-colors hover:bg-blue-50"
+          className="group w-full rounded-2xl border border-blue-100/60 bg-white/80 p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:bg-white"
         >
-          <div className="flex items-center gap-3">
-            <span
-              className="h-4 w-4 rounded-full"
-              style={{ backgroundColor: category.color }}
-            />
-            <span className="flex items-center gap-2 text-sm font-medium text-slate-900">
-              <span>{category.icon}</span>
-              {category.name}
-            </span>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-xl shadow-sm">
+                <span
+                  className="absolute inset-0 rounded-2xl opacity-30"
+                  style={{ backgroundColor: category.color }}
+                />
+                <span className="relative drop-shadow-sm">{category.icon}</span>
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-slate-900">
+                  {category.name}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {formatCurrency(category.total)} registrados este mes
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col items-end justify-center gap-1 text-right">
+              <span className="text-sm font-semibold text-slate-900">
+                {formatCurrency(category.total)}
+              </span>
+              <span
+                className={cn(
+                  "text-xs font-medium",
+                  totalAmount > 0 ? "text-blue-600" : "text-slate-400"
+                )}
+              >
+                {totalAmount > 0
+                  ? `${Math.round((category.total / totalAmount) * 100)}%`
+                  : "0%"}
+              </span>
+            </div>
           </div>
-          <span className="text-sm font-semibold text-slate-900">
-            {formatCurrency(category.total)}
-          </span>
+          <div className="mt-4">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-blue-100/60">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: totalAmount > 0 ? `${Math.min(100, Math.round((category.total / totalAmount) * 100))}%` : "0%",
+                  backgroundColor: category.color,
+                }}
+              />
+            </div>
+          </div>
         </button>
       ))}
     </div>
