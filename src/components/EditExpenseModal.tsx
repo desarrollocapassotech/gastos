@@ -30,12 +30,14 @@ interface EditExpenseModalProps {
     updatedExpense: Partial<Omit<Expense, 'id'>>
   ) => Promise<void> | void;
   onClose: () => void;
+  onDelete?: (id: string) => Promise<void> | void;
 }
 
 export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
   expense,
   onSave,
   onClose,
+  onDelete,
 }) => {
   const { projects } = useExpenseStore();
   const [amount, setAmount] = useState(formatCurrencyInput(expense.amount.toFixed(2)));
@@ -44,6 +46,7 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
   const [date, setDate] = useState(expense.date);
   const [projectId, setProjectId] = useState<string | undefined>(expense.projectId);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!projectId && projects.length > 0) {
@@ -68,6 +71,21 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
       console.error('Error updating expense', error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!onDelete) return;
+    const confirmed = window.confirm('¿Seguro que deseas eliminar este gasto?');
+    if (!confirmed) return;
+    setIsDeleting(true);
+    try {
+      await onDelete(expense.id);
+      onClose();
+    } catch (error) {
+      console.error('Error deleting expense', error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -151,20 +169,38 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
               />
             </div>
 
-            <div className="flex justify-end gap-3 mt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                className="px-4 py-2 text-sm"
-                disabled={isSaving}
-              >
+            <div className="flex justify-between gap-3 mt-6">
+              {onDelete && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={handleDelete}
+                  className="px-4 py-2 text-sm"
+                  disabled={isSaving || isDeleting}
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Eliminando...
+                    </>
+                  ) : (
+                    'Eliminar'
+                  )}
+                </Button>
+              )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  className="px-4 py-2 text-sm"
+                  disabled={isSaving || isDeleting}
+                >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 className="px-4 py-2 text-sm"
-                disabled={isSaving}
+                disabled={isSaving || isDeleting}
               >
                 {isSaving ? (
                   <>
