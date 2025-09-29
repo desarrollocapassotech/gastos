@@ -17,7 +17,7 @@ import {
 const CategoryDetail = () => {
   const { category } = useParams<{ category: string }>();
   const navigate = useNavigate();
-  const { expenses, categories, updateExpense, projects } = useExpenseStore();
+  const { expenses, categories, updateExpense, projects, deleteExpense } = useExpenseStore();
   const [selectedProjectId, setSelectedProjectId] = useState<string | "all">("all");
 
   const selectedMonth = new Date();
@@ -219,6 +219,10 @@ const CategoryDetail = () => {
           expense={editingExpense}
           onSave={async (updatedData) => {
             await updateExpense(editingExpense.id, updatedData);
+            setEditingExpense(null);
+          }}
+          onDelete={async (expenseId) => {
+            await deleteExpense(expenseId);
             setEditingExpense(null);
           }}
           onClose={() => setEditingExpense(null)}
