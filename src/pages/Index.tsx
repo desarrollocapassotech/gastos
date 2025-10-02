@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Calendar, Plus, Sparkles } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Calendar, Plus, Scale, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { ExpenseChart } from "@/components/ExpenseChart";
 import { CategoryList } from "@/components/CategoryList";
@@ -16,6 +16,7 @@ const Index = () => {
     getExpensesForMonthByProject,
     getTotalForMonth,
     getCategoriesWithTotals,
+    getTotalIncomeForMonth,
     updateExpense,
   } = useExpenseStore();
   const [selectedProjectId, setSelectedProjectId] = useState<string | "all">("all");
@@ -26,6 +27,9 @@ const Index = () => {
   const monthlyExpenses = getExpensesForMonthByProject(selectedMonth, projectFilter);
   const monthlyTotal = getTotalForMonth(selectedMonth, projectFilter);
   const categoriesWithTotals = getCategoriesWithTotals(selectedMonth, projectFilter);
+  const monthlyIncomeTotal = getTotalIncomeForMonth(selectedMonth);
+  const balance = monthlyIncomeTotal - monthlyTotal;
+  const balanceIsPositive = balance >= 0;
 
   const totalCategoriesAmount = useMemo(
     () => categoriesWithTotals.reduce((sum, category) => sum + category.total, 0),
@@ -180,6 +184,84 @@ const Index = () => {
           >
             <Sparkles className="h-4 w-4" /> Proyección
           </Link>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-sky-600">
+                Balance
+              </p>
+              <h2 className="text-xl font-semibold text-slate-900">Resumen financiero</h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                to="/incomes/new"
+                className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-600 transition hover:border-emerald-300 hover:bg-emerald-100"
+              >
+                <ArrowUpCircle className="h-4 w-4" /> Agregar ingreso
+              </Link>
+              <Link
+                to="/expenses/new"
+                className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-600 transition hover:border-rose-300 hover:bg-rose-100"
+              >
+                <ArrowDownCircle className="h-4 w-4" /> Agregar gasto
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
+              <div className="flex items-center justify-between">
+                <div className="rounded-full bg-emerald-500/10 p-2 text-emerald-600">
+                  <ArrowUpCircle className="h-5 w-5" />
+                </div>
+                <span className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                  Ingresos
+                </span>
+              </div>
+              <p className="mt-4 text-2xl font-semibold text-emerald-700">
+                {formatCurrency(monthlyIncomeTotal)}
+              </p>
+              <p className="text-xs text-emerald-600/80">Registrados en {monthText}</p>
+            </div>
+
+            <div className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4">
+              <div className="flex items-center justify-between">
+                <div className="rounded-full bg-rose-500/10 p-2 text-rose-600">
+                  <ArrowDownCircle className="h-5 w-5" />
+                </div>
+                <span className="text-xs font-semibold uppercase tracking-wide text-rose-600">
+                  Gastos
+                </span>
+              </div>
+              <p className="mt-4 text-2xl font-semibold text-rose-700">
+                {formatCurrency(monthlyTotal)}
+              </p>
+              <p className="text-xs text-rose-600/80">Registrados en {monthText}</p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+              <div className="flex items-center justify-between">
+                <div className={`rounded-full p-2 ${balanceIsPositive ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"}`}>
+                  <Scale className="h-5 w-5" />
+                </div>
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Balance
+                </span>
+              </div>
+              <p
+                className={`mt-4 text-2xl font-semibold ${balanceIsPositive ? "text-emerald-700" : "text-rose-600"}`}
+              >
+                {formatCurrency(balance)}
+              </p>
+              <p className="text-xs text-slate-500">
+                {balanceIsPositive ? "Superávit mensual" : "Déficit mensual"}
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 

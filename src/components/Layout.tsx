@@ -5,7 +5,8 @@ import { FloatingExpenseButton } from "@/components/FloatingExpenseButton";
 
 export function Layout() {
   const location = useLocation();
-  const shouldHideFloatingButton = location.pathname === "/expenses/new";
+  const shouldHideFloatingButton =
+    location.pathname === "/expenses/new" || location.pathname === "/incomes/new";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100">

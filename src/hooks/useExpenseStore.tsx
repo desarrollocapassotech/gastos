@@ -49,6 +49,14 @@ export interface Project {
   color: string;
 }
 
+export interface Income {
+  id: string;
+  userId: string;
+  amount: number;
+  description: string;
+  date: string;
+}
+
 const DEFAULT_CATEGORIES: Category[] = [
   { id: '1', name: 'Casa', color: '#EC4899', icon: '🏠' },
   { id: '2', name: 'Comida', color: '#10B981', icon: '🍽️' },
@@ -72,9 +80,11 @@ const DEFAULT_PROJECTS: Project[] = [
 
 interface ExpenseContextValue {
   expenses: Expense[];
+  incomes: Income[];
   categories: Category[];
   projects: Project[];
   addExpense: (expenseData: Omit<Expense, 'id' | 'userId'>) => Promise<void>;
+  addIncome: (incomeData: Omit<Income, 'id' | 'userId'>) => Promise<void>;
   updateExpense: (
     id: string,
     updatedData: Partial<Omit<Expense, 'id' | 'userId'>>
@@ -97,8 +107,10 @@ interface ExpenseContextValue {
   updateProject: (id: string, updatedData: Partial<Project>) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
   getExpensesForMonth: (date: Date) => Expense[];
+  getIncomesForMonth: (date: Date) => Income[];
   getExpensesForMonthByProject: (date: Date, projectId?: string | null) => Expense[];
   getTotalForMonth: (date: Date, projectId?: string | null) => number;
+  getTotalIncomeForMonth: (date: Date) => number;
   getCategoriesWithTotals: (
     date: Date,
     projectId?: string | null
@@ -110,6 +122,7 @@ const ExpenseContext = createContext<ExpenseContextValue | null>(null);
 
 export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
   const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
   const [projects, setProjects] = useState<Project[]>(DEFAULT_PROJECTS);
   const { user } = useAuth();
@@ -118,6 +131,7 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!user) {
       setExpenses([]);
+      setIncomes([]);
       setCategories(DEFAULT_CATEGORIES);
       setProjects(DEFAULT_PROJECTS);
       return;
@@ -173,6 +187,20 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       } catch (e) {
         console.error('Error loading expenses', e);
       }
+
+      try {
+        const incomeQuery = query(
+          collectionGroup(db, 'incomes'),
+          where('userId', '==', user.uid)
+        );
+        const incomeSnapshot = await getDocs(incomeQuery);
+        const loadedIncomes = incomeSnapshot.docs.map(
+          (d) => d.data() as Income
+        );
+        setIncomes(loadedIncomes);
+      } catch (e) {
+        console.error('Error loading incomes', e);
+      }
     };
     loadData();
   }, [user]);
@@ -207,6 +235,36 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       }
     },
     [projects, user]
+  );
+
+  const addIncome = useCallback(
+    async (incomeData: Omit<Income, 'id' | 'userId'>) => {
+      if (!user) return;
+      const newIncome: Income = {
+        ...incomeData,
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        userId: user.uid,
+      };
+      const monthKey = newIncome.date.substring(0, 7);
+      try {
+        await setDoc(
+          doc(
+            db,
+            'users',
+            user.uid,
+            'months',
+            monthKey,
+            'incomes',
+            newIncome.id
+          ),
+          newIncome
+        );
+        setIncomes((prev) => [newIncome, ...prev]);
+      } catch (e) {
+        console.error('Error adding income', e);
+      }
+    },
+    [user]
   );
 
   const updateExpense = useCallback(
@@ -424,6 +482,21 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
     [expenses]
   );
 
+  const getIncomesForMonth = useCallback(
+    (date: Date) => {
+      const year = date.getFullYear();
+      const month = date.getMonth();
+
+      return incomes.filter((income) => {
+        const incomeDate = new Date(income.date);
+        return (
+          incomeDate.getFullYear() === year && incomeDate.getMonth() === month
+        );
+      });
+    },
+    [incomes]
+  );
+
   const getExpensesForMonthByProject = useCallback(
     (date: Date, projectId?: string | null) => {
       const monthlyExpenses = getExpensesForMonth(date);
@@ -445,6 +518,16 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       );
     },
     [getExpensesForMonthByProject]
+  );
+
+  const getTotalIncomeForMonth = useCallback(
+    (date: Date) => {
+      return getIncomesForMonth(date).reduce(
+        (total, income) => total + income.amount,
+        0
+      );
+    },
+    [getIncomesForMonth]
   );
 
   const getCategoriesWithTotals = useCallback(
@@ -482,9 +565,11 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
   const value = useMemo(
     () => ({
       expenses,
+      incomes,
       categories,
       projects,
       addExpense,
+      addIncome,
       updateExpense,
       addInstallmentExpense,
       deleteExpense,
@@ -493,16 +578,20 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       updateProject,
       deleteProject,
       getExpensesForMonth,
+      getIncomesForMonth,
       getExpensesForMonthByProject,
       getTotalForMonth,
+      getTotalIncomeForMonth,
       getCategoriesWithTotals,
       getProjectedExpenses,
     }),
     [
       expenses,
+      incomes,
       categories,
       projects,
       addExpense,
+      addIncome,
       updateExpense,
       addInstallmentExpense,
       deleteExpense,
@@ -511,8 +600,10 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       updateProject,
       deleteProject,
       getExpensesForMonth,
+      getIncomesForMonth,
       getExpensesForMonthByProject,
       getTotalForMonth,
+      getTotalIncomeForMonth,
       getCategoriesWithTotals,
       getProjectedExpenses,
     ]
