@@ -8,6 +8,38 @@ export const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
+export const formatCompactCurrency = (amount: number): string => {
+  const absoluteAmount = Math.abs(amount);
+  const sign = amount < 0 ? '-' : '';
+
+  if (absoluteAmount >= 1_000_000) {
+    const compactValue = absoluteAmount / 1_000_000;
+    const decimals = compactValue >= 10 ? 0 : 1;
+    const formatted = new Intl.NumberFormat('es-AR', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    }).format(compactValue);
+    return `${sign}$${formatted}M`;
+  }
+
+  if (absoluteAmount >= 1_000) {
+    const compactValue = absoluteAmount / 1_000;
+    const decimals = compactValue >= 10 ? 0 : 1;
+    const formatted = new Intl.NumberFormat('es-AR', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    }).format(compactValue);
+    return `${sign}$${formatted}K`;
+  }
+
+  const formatted = new Intl.NumberFormat('es-AR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+  }).format(absoluteAmount);
+
+  return `${sign}$${formatted}`;
+};
+
 const THOUSANDS_REGEX = /\B(?=(\d{3})+(?!\d))/g;
 
 export const formatCurrencyInput = (value: string): string => {
