@@ -8,6 +8,7 @@ import { DatePicker } from "@/components/DatePicker";
 import { useExpenseStore } from "@/hooks/useExpenseStore";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from "@/lib/formatters";
+import { cn } from "@/lib/utils";
 
 const formatDateValue = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -168,9 +169,12 @@ const AddIncome = () => {
                 key={option.value}
                 type="button"
                 onClick={() => setDate(option.value)}
-                className={`rounded-2xl border border-slate-200 bg-white p-3 text-center text-sm font-semibold text-slate-600 shadow-sm transition hover:-translate-y-1 hover:shadow-md ${
-                  isActive ? "border-transparent bg-sky-500 text-white shadow-lg" : ""
-                }`}
+                className={cn(
+                  "rounded-2xl p-3 text-center text-sm font-semibold transition hover:-translate-y-1 hover:shadow-md",
+                  isActive
+                    ? "border-transparent bg-sky-500 text-white shadow-lg"
+                    : "border border-slate-200 bg-white text-slate-600 shadow-sm"
+                )}
               >
                 <div className="text-base font-bold">{option.label}</div>
                 <div className="text-xs font-medium uppercase tracking-wide">
