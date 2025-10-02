@@ -5,7 +5,7 @@ import { ExpenseChart } from "@/components/ExpenseChart";
 import { CategoryList } from "@/components/CategoryList";
 import { MonthNavigator } from "@/components/MonthNavigator";
 import { Expense, Project, useExpenseStore } from "@/hooks/useExpenseStore";
-import { formatCurrency } from "@/lib/formatters";
+import { formatCompactCurrency, formatCurrency } from "@/lib/formatters";
 import { EditExpenseModal } from "@/components/EditExpenseModal";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
@@ -77,13 +77,13 @@ const Index = () => {
                   outerRadius={125}
                   centerLabel={
                     <div className="flex flex-col items-center text-white">
-                      <span className="text-xs uppercase tracking-[0.25em] text-white/70">
+                      <span className="text-[10px] uppercase tracking-[0.35em] text-white/70">
                         {summaryLabel}
                       </span>
-                      <span className="mt-1 inline-flex items-center rounded-xl bg-white/15 px-4 py-1 text-3xl font-semibold leading-tight shadow-inner">
-                        {formatCurrency(monthlyTotal)}
+                      <span className="mt-2 text-5xl font-semibold leading-tight tracking-tight sm:text-6xl">
+                        {formatCompactCurrency(monthlyTotal)}
                       </span>
-                      <span className="mt-1 text-xs capitalize text-white/80">{monthText}</span>
+                      <span className="mt-2 text-xs capitalize text-white/80">{monthText}</span>
                     </div>
                   }
                 />
