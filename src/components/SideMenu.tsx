@@ -40,14 +40,14 @@ const buildCurrentMonthNavigationItem = (): NavigationItem => {
 };
 
 const linkBaseClasses =
-  "group relative block w-full rounded-2xl px-4 py-3 text-sm font-semibold text-left transition-all md:w-auto";
+  "group relative block w-full rounded-2xl px-4 py-3 text-sm font-semibold text-left transition-all md:w-auto md:rounded-full md:px-5 md:py-2.5";
 
 const getLinkClasses = ({ isActive }: { isActive: boolean }) =>
   cn(
     linkBaseClasses,
     isActive
-      ? "border border-blue-500/70 bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-lg shadow-blue-500/30"
-      : "border border-slate-200/70 bg-white/80 text-slate-600 shadow-sm hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:text-blue-700 hover:shadow-md md:border-transparent md:bg-white/75 md:backdrop-blur"
+      ? "border border-blue-500/70 bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-lg shadow-blue-500/30 md:border-transparent"
+      : "border border-slate-200/70 bg-white/80 text-slate-600 shadow-sm hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:text-blue-700 hover:shadow-md md:border-transparent md:bg-transparent md:text-slate-600 md:hover:bg-white/80 md:hover:text-blue-700"
   );
 
 export function SideMenu() {
@@ -73,37 +73,41 @@ export function SideMenu() {
 
   return (
     <>
-      <nav className="hidden items-center gap-3 md:flex">
-        {navigationItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) => getLinkClasses({ isActive })}
-          >
-            <div className="flex w-full items-center gap-4 md:gap-3">
-              {item.icon && (
-                <span
-                  className={cn(
-                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600 transition-all md:h-10 md:w-10",
-                    "group-hover:border-blue-200 group-hover:bg-blue-100 group-hover:text-blue-700",
-                    "group-aria-[current=page]:border-white/40 group-aria-[current=page]:bg-white/20 group-aria-[current=page]:text-white group-aria-[current=page]:shadow-inner"
-                  )}
-                >
-                  <item.icon className="h-4 w-4" />
+      <nav className="hidden md:flex">
+        <div className="flex items-center gap-2 rounded-full border border-white/60 bg-white/60 px-2 py-2 shadow-[0_18px_40px_-25px_rgba(37,99,235,0.75)] backdrop-blur-xl">
+          {navigationItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) => getLinkClasses({ isActive })}
+            >
+              <div className="flex w-full items-center gap-3">
+                {item.icon && (
+                  <span
+                    className={cn(
+                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600 transition-all md:h-9 md:w-9",
+                      "group-hover:border-blue-200 group-hover:bg-blue-100 group-hover:text-blue-700",
+                      "group-aria-[current=page]:border-white/40 group-aria-[current=page]:bg-white/10 group-aria-[current=page]:text-white"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                  </span>
+                )}
+                <span className="flex-1 whitespace-nowrap text-sm font-semibold tracking-tight">
+                  {item.label}
                 </span>
-              )}
-              <span className="flex-1 text-sm font-semibold tracking-tight">{item.label}</span>
-            </div>
-          </NavLink>
-        ))}
-        <Button
-          variant="ghost"
-          onClick={handleSignOut}
-          className="ml-2 inline-flex items-center gap-2 rounded-2xl border border-transparent bg-white/70 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:text-blue-700"
-        >
-          <LogOut className="h-4 w-4" />
-          Cerrar sesión
-        </Button>
+              </div>
+            </NavLink>
+          ))}
+          <Button
+            variant="ghost"
+            onClick={handleSignOut}
+            className="ml-1 inline-flex items-center gap-2 rounded-full border border-transparent bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:text-blue-700"
+          >
+            <LogOut className="h-4 w-4" />
+            Cerrar sesión
+          </Button>
+        </div>
       </nav>
 
       <Sheet>
