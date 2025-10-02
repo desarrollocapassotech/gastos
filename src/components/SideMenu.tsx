@@ -1,13 +1,5 @@
 import type React from "react";
-import {
-  Menu,
-  LogOut,
-  LayoutDashboard,
-  CalendarRange,
-  Sparkles,
-  ChevronDown,
-  FolderKanban,
-} from "lucide-react";
+import { Menu, LogOut, LayoutDashboard, CalendarRange, Sparkles, FolderKanban } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,26 +10,14 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { formatMonth } from "@/lib/formatters";
 import { useAuth } from "@/hooks/useAuth";
-import { useExpenseStore } from "@/hooks/useExpenseStore";
 
 type NavigationItem = {
   to: string;
   label: string;
   icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-};
-
-type CategoryNavigationItem = {
-  to: string;
-  label: string;
-  icon: string;
 };
 
 const buildCurrentMonthNavigationItem = (): NavigationItem => {
@@ -65,7 +45,6 @@ const getLinkClasses = ({ isActive }: { isActive: boolean }) =>
 export function SideMenu() {
   const navigate = useNavigate();
   const { signOutUser } = useAuth();
-  const { categories } = useExpenseStore();
 
   const navigationItems: NavigationItem[] = [
     { to: "/", label: "Inicio", icon: LayoutDashboard },
@@ -73,15 +52,6 @@ export function SideMenu() {
     { to: "/projected", label: "Gastos proyectados", icon: Sparkles },
     { to: "/projects", label: "Proyectos", icon: FolderKanban },
   ];
-
-  const categoryItems: CategoryNavigationItem[] = categories
-    .slice()
-    .sort((a, b) => a.name.localeCompare(b.name, "es"))
-    .map((category) => ({
-      to: `/category/${encodeURIComponent(category.name)}`,
-      label: category.name,
-      icon: category.icon,
-    }));
 
   const handleSignOut = async () => {
     try {
@@ -176,55 +146,6 @@ export function SideMenu() {
                   </SheetClose>
                 ))}
               </div>
-              {categoryItems.length > 0 && (
-                <Collapsible className="overflow-hidden rounded-2xl border border-blue-100/80 bg-white/80 shadow-sm">
-                  <CollapsibleTrigger className="group flex w-full items-center justify-between gap-3 px-4 py-3 text-left">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-slate-700">
-                        Categorías
-                      </span>
-                      <span className="text-xs font-medium text-slate-400">
-                        {categoryItems.length} disponibles
-                      </span>
-                    </div>
-                    <ChevronDown className="h-4 w-4 text-slate-500 transition-transform group-data-[state=open]:rotate-180" />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-3 pb-3 pt-1">
-                    <div className="flex max-h-80 flex-col gap-2 overflow-y-auto pr-1">
-                      {categoryItems.map((category) => (
-                        <SheetClose asChild key={category.to}>
-                          <NavLink
-                            to={category.to}
-                            className={({ isActive }) =>
-                              cn(getLinkClasses({ isActive }), "text-left")
-                            }
-                          >
-                            <div className="flex w-full items-center gap-4 md:gap-3">
-                              <span
-                                className={cn(
-                                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-blue-100 text-base transition-all md:h-10 md:w-10 md:text-lg",
-                                  "group-hover:border-blue-200 group-hover:shadow",
-                                  "group-aria-[current=page]:border-white/40 group-aria-[current=page]:from-blue-500/30 group-aria-[current=page]:via-indigo-500/20 group-aria-[current=page]:to-indigo-400/30 group-aria-[current=page]:text-white"
-                                )}
-                              >
-                                {category.icon}
-                              </span>
-                              <div className="flex flex-1 flex-col">
-                                <span className="text-sm font-semibold tracking-tight">
-                                  {category.label}
-                                </span>
-                                <span className="text-xs text-slate-500 transition-colors group-aria-[current=page]:text-white/80">
-                                  Ver movimientos
-                                </span>
-                              </div>
-                            </div>
-                          </NavLink>
-                        </SheetClose>
-                      ))}
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              )}
               <div className="pt-2">
                 <SheetClose asChild>
                   <Button
