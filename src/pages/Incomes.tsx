@@ -1,8 +1,18 @@
-import { useMemo } from "react";
-import { ArrowLeft, ArrowUpCircle, CalendarDays, PlusCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  ArrowLeft,
+  ArrowUpCircle,
+  CalendarDays,
+  Pencil,
+  PlusCircle,
+  Trash2,
+} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useExpenseStore } from "@/hooks/useExpenseStore";
+import { useExpenseStore, type Income } from "@/hooks/useExpenseStore";
 import { formatCurrency } from "@/lib/formatters";
+import { EditIncomeModal } from "@/components/EditIncomeModal";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 interface GroupedIncome {
   monthKey: string;
@@ -35,7 +45,9 @@ const formatIncomeDate = (date: string) => {
 
 const Incomes = () => {
   const navigate = useNavigate();
-  const { incomes } = useExpenseStore();
+  const { incomes, updateIncome, deleteIncome } = useExpenseStore();
+  const { toast } = useToast();
+  const [editingIncome, setEditingIncome] = useState<Income | null>(null);
 
   const { totalIncome, groupedIncomes } = useMemo(() => {
     if (incomes.length === 0) {
@@ -75,6 +87,63 @@ const Incomes = () => {
   }, [incomes]);
 
   const totalCount = incomes.length;
+
+  const handleSaveIncome = async (
+    income: Income,
+    updatedData: Partial<Omit<Income, "id" | "userId">>
+  ) => {
+    try {
+      await updateIncome(income.id, updatedData);
+      const nextDescription = updatedData.description ?? income.description;
+      const nextAmount = updatedData.amount ?? income.amount;
+      toast({
+        title: "Ingreso actualizado",
+        description: `${nextDescription} ahora es de ${formatCurrency(nextAmount)}.`,
+      });
+    } catch (error) {
+      console.error("Error updating income", error);
+      toast({
+        title: "No se pudo actualizar",
+        description: "Intenta nuevamente en unos instantes.",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const removeIncome = async (incomeId: string) => {
+    const target = incomes.find((entry) => entry.id === incomeId);
+    try {
+      await deleteIncome(incomeId);
+      toast({
+        title: "Ingreso eliminado",
+        description: target
+          ? `Se eliminó "${target.description}" por ${formatCurrency(target.amount)}.`
+          : "El ingreso fue eliminado correctamente.",
+      });
+    } catch (error) {
+      console.error("Error deleting income", error);
+      toast({
+        title: "No se pudo eliminar",
+        description: "Intenta nuevamente en unos instantes.",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const handleDeleteClick = async (income: Income) => {
+    const confirmed = window.confirm(
+      `¿Seguro que deseas eliminar "${income.description}"?`
+    );
+    if (!confirmed) return;
+
+    try {
+      await removeIncome(income.id);
+    } catch {
+      // El toast ya informa el error
+    }
+  };
 
   return (
     <div className="space-y-6 pb-32 sm:pb-20">
@@ -180,11 +249,32 @@ const Incomes = () => {
                         <span>{formatIncomeDate(income.date)}</span>
                       </div>
                     </div>
-                    <div className="text-left sm:text-right">
+                    <div className="flex flex-col items-start gap-3 text-left sm:items-end sm:text-right">
                       <p className="text-sm font-semibold text-emerald-600">
                         {formatCurrency(income.amount)}
                       </p>
-                      <p className="text-xs text-slate-500">ID #{income.id.slice(-6)}</p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="text-slate-500 hover:text-slate-900"
+                          onClick={() => setEditingIncome(income)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                          Editar
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                          onClick={() => handleDeleteClick(income)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Eliminar
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -193,6 +283,14 @@ const Incomes = () => {
           ))
         )}
       </section>
+      {editingIncome && (
+        <EditIncomeModal
+          income={editingIncome}
+          onSave={(updatedData) => handleSaveIncome(editingIncome, updatedData)}
+          onDelete={(id) => removeIncome(id)}
+          onClose={() => setEditingIncome(null)}
+        />
+      )}
     </div>
   );
 };

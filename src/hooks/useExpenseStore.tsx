@@ -89,6 +89,10 @@ interface ExpenseContextValue {
     id: string,
     updatedData: Partial<Omit<Expense, 'id' | 'userId'>>
   ) => Promise<void>;
+  updateIncome: (
+    id: string,
+    updatedData: Partial<Omit<Income, 'id' | 'userId'>>
+  ) => Promise<void>;
   addInstallmentExpense: (
     amount: number,
     category: string,
@@ -98,6 +102,7 @@ interface ExpenseContextValue {
     projectId?: string
   ) => Promise<void>;
   deleteExpense: (id: string) => Promise<void>;
+  deleteIncome: (id: string) => Promise<void>;
   addCategory: (
     name: string,
     color: string,
@@ -305,6 +310,47 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
     [expenses, user]
   );
 
+  const updateIncome = useCallback(
+    async (
+      id: string,
+      updatedData: Partial<Omit<Income, 'id' | 'userId'>>
+    ) => {
+      if (!user) return;
+      const existingIncome = incomes.find(
+        (income) => income.id === id && income.userId === user.uid
+      );
+      if (!existingIncome) return;
+
+      const updatedIncome: Income = { ...existingIncome, ...updatedData };
+      const oldMonth = existingIncome.date.substring(0, 7);
+      const newMonth = updatedIncome.date.substring(0, 7);
+
+      try {
+        if (oldMonth !== newMonth) {
+          await deleteDoc(
+            doc(db, 'users', user.uid, 'months', oldMonth, 'incomes', id)
+          );
+          await setDoc(
+            doc(db, 'users', user.uid, 'months', newMonth, 'incomes', id),
+            updatedIncome
+          );
+        } else {
+          await updateDoc(
+            doc(db, 'users', user.uid, 'months', oldMonth, 'incomes', id),
+            updatedData as Record<string, unknown>
+          );
+        }
+
+        setIncomes((prev) =>
+          prev.map((income) => (income.id === id ? updatedIncome : income))
+        );
+      } catch (e) {
+        console.error('Error updating income', e);
+      }
+    },
+    [incomes, user]
+  );
+
   const addInstallmentExpense = useCallback(
     async (
       amount: number,
@@ -380,6 +426,28 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       }
     },
     [expenses, user]
+  );
+
+  const deleteIncome = useCallback(
+    async (id: string) => {
+      if (!user) return;
+      const income = incomes.find(
+        (entry) => entry.id === id && entry.userId === user.uid
+      );
+      if (!income) return;
+
+      const monthKey = income.date.substring(0, 7);
+
+      try {
+        await deleteDoc(
+          doc(db, 'users', user.uid, 'months', monthKey, 'incomes', id)
+        );
+        setIncomes((prev) => prev.filter((entry) => entry.id !== id));
+      } catch (e) {
+        console.error('Error deleting income', e);
+      }
+    },
+    [incomes, user]
   );
 
   const addCategory = useCallback(
@@ -571,8 +639,10 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       addExpense,
       addIncome,
       updateExpense,
+      updateIncome,
       addInstallmentExpense,
       deleteExpense,
+      deleteIncome,
       addCategory,
       addProject,
       updateProject,
@@ -593,8 +663,10 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       addExpense,
       addIncome,
       updateExpense,
+      updateIncome,
       addInstallmentExpense,
       deleteExpense,
+      deleteIncome,
       addCategory,
       addProject,
       updateProject,
