@@ -17,6 +17,7 @@ import Layout from "@/components/Layout";
 import ScrollToTop from "@/components/ScrollToTop";
 import AddExpense from "./pages/AddExpense";
 import AddIncome from "./pages/AddIncome";
+import Incomes from "./pages/Incomes";
 import Projects from "./pages/Projects";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
                 <Route element={<Layout />}>
                   <Route index element={<Index />} />
                   <Route path="/projected" element={<ProjectedExpenses />} />
+                  <Route path="/incomes" element={<Incomes />} />
                   <Route path="/projects" element={<Projects />} />
                   <Route path="/expenses/new" element={<AddExpense />} />
                   <Route path="/incomes/new" element={<AddIncome />} />

@@ -1,5 +1,13 @@
 import type React from "react";
-import { Menu, LogOut, LayoutDashboard, CalendarRange, Sparkles, FolderKanban } from "lucide-react";
+import {
+  Menu,
+  LogOut,
+  LayoutDashboard,
+  CalendarRange,
+  Sparkles,
+  FolderKanban,
+  TrendingUp,
+} from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +57,7 @@ export function SideMenu() {
   const navigationItems: NavigationItem[] = [
     { to: "/", label: "Inicio", icon: LayoutDashboard },
     buildCurrentMonthNavigationItem(),
+    { to: "/incomes", label: "Ingresos", icon: TrendingUp },
     { to: "/projected", label: "Gastos proyectados", icon: Sparkles },
     { to: "/projects", label: "Proyectos", icon: FolderKanban },
   ];
