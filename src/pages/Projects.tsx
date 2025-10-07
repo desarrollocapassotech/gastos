@@ -9,6 +9,7 @@ import { useExpenseStore, Project } from "@/hooks/useExpenseStore";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
 import { Badge } from "@/components/ui/badge";
+import { sortProjectsByName } from "@/lib/projects";
 
 interface ProjectEditValues {
   name: string;
@@ -35,9 +36,11 @@ const Projects = () => {
     );
   }, [projects]);
 
+  const sortedProjects = useMemo(() => sortProjectsByName(projects), [projects]);
+
   const projectSummaries = useMemo(
     () =>
-      projects.map((project) => {
+      sortedProjects.map((project) => {
         const relatedExpenses = expenses.filter((expense) => expense.projectId === project.id);
         const totalAmount = relatedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
         return {
@@ -46,7 +49,7 @@ const Projects = () => {
           expensesCount: relatedExpenses.length,
         };
       }),
-    [expenses, projects]
+    [expenses, sortedProjects]
   );
 
   const totalProjects = projects.length;

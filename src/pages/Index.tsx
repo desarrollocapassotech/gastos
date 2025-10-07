@@ -8,6 +8,7 @@ import { Expense, Project, useExpenseStore } from "@/hooks/useExpenseStore";
 import { formatCompactCurrency, formatCurrency } from "@/lib/formatters";
 import { EditExpenseModal } from "@/components/EditExpenseModal";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { sortProjectsByName } from "@/lib/projects";
 
 const Index = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -23,6 +24,8 @@ const Index = () => {
   const navigate = useNavigate();
 
   const projectFilter = selectedProjectId === "all" ? null : selectedProjectId;
+
+  const sortedProjects = useMemo(() => sortProjectsByName(projects), [projects]);
 
   const monthlyExpenses = getExpensesForMonthByProject(selectedMonth, projectFilter);
   const monthlyTotal = getTotalForMonth(selectedMonth, projectFilter);
@@ -40,8 +43,8 @@ const Index = () => {
 
   const selectedProject: Project | null = useMemo(() => {
     if (!projectFilter) return null;
-    return projects.find((project) => project.id === projectFilter) ?? null;
-  }, [projectFilter, projects]);
+    return sortedProjects.find((project) => project.id === projectFilter) ?? null;
+  }, [projectFilter, sortedProjects]);
 
   const monthText = selectedMonth.toLocaleDateString("es", {
     month: "long",
@@ -144,7 +147,7 @@ const Index = () => {
             >
               Todos
             </button>
-            {projects.map((project) => {
+            {sortedProjects.map((project) => {
               const isActive = selectedProjectId === project.id;
               return (
                 <button
