@@ -35,9 +35,17 @@ const Projects = () => {
     );
   }, [projects]);
 
+  const sortedProjects = useMemo(
+    () =>
+      [...projects].sort((projectA, projectB) =>
+        projectA.name.localeCompare(projectB.name, "es", { sensitivity: "base" })
+      ),
+    [projects]
+  );
+
   const projectSummaries = useMemo(
     () =>
-      projects.map((project) => {
+      sortedProjects.map((project) => {
         const relatedExpenses = expenses.filter((expense) => expense.projectId === project.id);
         const totalAmount = relatedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
         return {
@@ -46,7 +54,7 @@ const Projects = () => {
           expensesCount: relatedExpenses.length,
         };
       }),
-    [expenses, projects]
+    [expenses, sortedProjects]
   );
 
   const totalProjects = projects.length;
