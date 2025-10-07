@@ -9,6 +9,7 @@ import { useExpenseStore, Project } from "@/hooks/useExpenseStore";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
 import { Badge } from "@/components/ui/badge";
+import { sortProjectsByName } from "@/lib/projects";
 
 interface ProjectEditValues {
   name: string;
@@ -35,13 +36,7 @@ const Projects = () => {
     );
   }, [projects]);
 
-  const sortedProjects = useMemo(
-    () =>
-      [...projects].sort((projectA, projectB) =>
-        projectA.name.localeCompare(projectB.name, "es", { sensitivity: "base" })
-      ),
-    [projects]
-  );
+  const sortedProjects = useMemo(() => sortProjectsByName(projects), [projects]);
 
   const projectSummaries = useMemo(
     () =>

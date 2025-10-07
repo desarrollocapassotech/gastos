@@ -12,6 +12,7 @@ import { useExpenseStore } from "@/hooks/useExpenseStore";
 import { useToast } from "@/hooks/use-toast";
 import { DatePicker } from "@/components/DatePicker";
 import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from "@/lib/formatters";
+import { sortProjectsByName } from "@/lib/projects";
 
 const formatDateLabel = (date: Date) =>
   date.toLocaleDateString("es", {
@@ -52,15 +53,17 @@ const AddExpense = () => {
   const [projectId, setProjectId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const sortedProjects = useMemo(() => sortProjectsByName(projects), [projects]);
+
   useEffect(() => {
     amountInputRef.current?.focus();
   }, []);
 
   useEffect(() => {
-    if (!projectId && projects.length > 0) {
-      setProjectId(projects[0].id);
+    if (!projectId && sortedProjects.length > 0) {
+      setProjectId(sortedProjects[0].id);
     }
-  }, [projectId, projects]);
+  }, [projectId, sortedProjects]);
 
   const quickDateOptions = useMemo(() => {
     const today = new Date();
@@ -95,7 +98,7 @@ const AddExpense = () => {
     setDate(formatDateValue(new Date()));
     setHasInstallments(false);
     setInstallmentCount("2");
-    setProjectId(projects[0]?.id ?? null);
+    setProjectId(sortedProjects[0]?.id ?? null);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -224,7 +227,7 @@ const AddExpense = () => {
               <SelectValue placeholder="Selecciona un proyecto" />
             </SelectTrigger>
             <SelectContent>
-              {projects.map((project) => (
+              {sortedProjects.map((project) => (
                 <SelectItem key={project.id} value={project.id}>
                   <div className="flex items-center gap-2">
                     <span
