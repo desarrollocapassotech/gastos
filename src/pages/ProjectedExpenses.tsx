@@ -208,7 +208,9 @@ const ProjectedExpenses = () => {
             </div>
           </form>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:grid sm:snap-none sm:overflow-visible sm:pb-0 sm:grid-cols-2 lg:grid-cols-3"
+          >
             {monthsData.map((monthData) => {
               const { date, total, isPast, isCurrent, isFuture, hasExpenses } = monthData;
               const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -232,7 +234,11 @@ const ProjectedExpenses = () => {
               }
 
               return (
-                <Link key={monthKey} to={`/month/${date.getFullYear()}/${date.getMonth() + 1}`} className="block">
+                <Link
+                  key={monthKey}
+                  to={`/month/${date.getFullYear()}/${date.getMonth() + 1}`}
+                  className="block min-w-[260px] snap-start sm:min-w-0"
+                >
                   <div
                     className={`rounded-2xl border p-4 transition-transform hover:-translate-y-1 hover:shadow-md ${cardClass}`}
                   >
