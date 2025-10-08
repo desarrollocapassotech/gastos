@@ -50,6 +50,9 @@ const AddExpense = () => {
   const [date, setDate] = useState(() => formatDateValue(new Date()));
   const [hasInstallments, setHasInstallments] = useState(false);
   const [installmentCount, setInstallmentCount] = useState("2");
+  const [installmentStartDate, setInstallmentStartDate] = useState(() =>
+    formatDateValue(new Date())
+  );
   const [projectId, setProjectId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -98,6 +101,7 @@ const AddExpense = () => {
     setDate(formatDateValue(new Date()));
     setHasInstallments(false);
     setInstallmentCount("2");
+    setInstallmentStartDate(formatDateValue(new Date()));
     setProjectId(sortedProjects[0]?.id ?? null);
   };
 
@@ -140,12 +144,14 @@ const AddExpense = () => {
           return;
         }
 
+        const firstInstallmentDate = parseDateValue(installmentStartDate);
+
         await addInstallmentExpense(
           numericAmount,
           category,
           description,
           installmentsNumber,
-          new Date(date),
+          firstInstallmentDate,
           projectId
         );
 
@@ -360,7 +366,15 @@ const AddExpense = () => {
               <h4 className="text-sm font-semibold text-slate-800">Pago en cuotas</h4>
               <p className="text-xs text-slate-500">Divide el gasto entre varios meses</p>
             </div>
-            <Switch checked={hasInstallments} onCheckedChange={setHasInstallments} />
+            <Switch
+              checked={hasInstallments}
+              onCheckedChange={(checked) => {
+                setHasInstallments(checked);
+                if (checked) {
+                  setInstallmentStartDate(date);
+                }
+              }}
+            />
           </div>
 
           {hasInstallments && (
@@ -388,6 +402,31 @@ const AddExpense = () => {
               {installmentPreview && (
                 <p className="text-xs text-slate-500">Cuota estimada: {installmentPreview}</p>
               )}
+              <div className="space-y-2 pt-2">
+                <Label
+                  htmlFor="installment-start-date"
+                  className="text-xs font-semibold uppercase tracking-wide text-slate-500"
+                >
+                  Primera cuota
+                </Label>
+                <div className="flex items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white/80 p-4">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600">
+                      {parseDateValue(installmentStartDate).toLocaleDateString("es", {
+                        dateStyle: "long",
+                      })}
+                    </p>
+                    <p className="text-xs text-slate-500">Selecciona cuándo se paga la primera cuota</p>
+                  </div>
+                  <DatePicker
+                    id="installment-start-date"
+                    value={installmentStartDate}
+                    onChange={setInstallmentStartDate}
+                    buttonClassName="ml-4"
+                    placeholder="Elegí una fecha"
+                  />
+                </div>
+              </div>
             </div>
           )}
         </Card>
