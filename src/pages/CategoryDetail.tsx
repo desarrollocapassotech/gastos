@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { Expense, Project, useExpenseStore } from "@/hooks/useExpenseStore";
 import { formatCurrency } from "@/lib/formatters";
 import { EditExpenseModal } from "@/components/EditExpenseModal";
@@ -17,10 +17,27 @@ import {
 const CategoryDetail = () => {
   const { category } = useParams<{ category: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { expenses, categories, updateExpense, projects, deleteExpense } = useExpenseStore();
   const [selectedProjectId, setSelectedProjectId] = useState<string | "all">("all");
 
-  const selectedMonth = new Date();
+  const searchParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search]
+  );
+  const yearParam = searchParams.get("year");
+  const monthParam = searchParams.get("month");
+
+  const selectedMonth = useMemo(() => {
+    const yearNumber = yearParam ? parseInt(yearParam, 10) : NaN;
+    const monthNumber = monthParam ? parseInt(monthParam, 10) : NaN;
+
+    if (!Number.isNaN(yearNumber) && !Number.isNaN(monthNumber) && monthNumber >= 1 && monthNumber <= 12) {
+      return new Date(yearNumber, monthNumber - 1, 1);
+    }
+
+    return new Date();
+  }, [monthParam, yearParam]);
   const monthText = selectedMonth.toLocaleDateString("es", { month: "long", year: "numeric" });
 
   const categoryInfo = categories.find((cat) => cat.name === category);
