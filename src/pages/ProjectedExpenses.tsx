@@ -23,35 +23,64 @@ const ProjectedExpenses = () => {
   }, [projectFilter, projects]);
 
   const currentDate = new Date();
-  const months = Array.from({ length: 12 }, (_, i) => {
-    const date = new Date(currentDate);
-    date.setMonth(currentDate.getMonth() - 6 + i);
-    return date;
-  });
-
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
 
-  const getMonthData = (date: Date) => {
-    const total = getTotalForMonth(date, projectFilter);
-    const isPast = date < new Date(currentYear, currentMonth, 1);
-    const isCurrent = date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-    const isFuture = date > new Date(currentYear, currentMonth + 1, 0);
+  const currentMonthStart = useMemo(
+    () => new Date(currentYear, currentMonth, 1),
+    [currentMonth, currentYear]
+  );
+  const nextMonthStart = useMemo(
+    () => new Date(currentYear, currentMonth + 1, 1),
+    [currentMonth, currentYear]
+  );
 
-    return {
-      date,
-      total,
-      isPast,
-      isCurrent,
-      isFuture,
-      hasExpenses: total > 0,
-    };
-  };
+  const months = useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, index) =>
+        new Date(currentYear, currentMonth + index - 6, 1)
+      ),
+    [currentMonth, currentYear]
+  );
 
-  const monthsData = months.map(getMonthData);
-  const totalPast = monthsData.filter((m) => m.isPast).reduce((sum, m) => sum + m.total, 0);
-  const totalFuture = monthsData.filter((m) => m.isFuture).reduce((sum, m) => sum + m.total, 0);
-  const currentTotal = monthsData.find((m) => m.isCurrent)?.total || 0;
+  const monthsData = useMemo(
+    () =>
+      months.map((monthDate) => {
+        const total = getTotalForMonth(monthDate, projectFilter);
+        const isCurrent = monthDate.getTime() === currentMonthStart.getTime();
+        const isPast = monthDate < currentMonthStart;
+        const isFuture = monthDate >= nextMonthStart;
+
+        return {
+          date: monthDate,
+          total,
+          isPast,
+          isCurrent,
+          isFuture,
+          hasExpenses: total > 0,
+        };
+      }),
+    [
+      months,
+      getTotalForMonth,
+      projectFilter,
+      currentMonthStart,
+      nextMonthStart,
+    ]
+  );
+
+  const totalPast = useMemo(
+    () => monthsData.filter((m) => m.isPast).reduce((sum, m) => sum + m.total, 0),
+    [monthsData]
+  );
+  const totalFuture = useMemo(
+    () => monthsData.filter((m) => m.isFuture).reduce((sum, m) => sum + m.total, 0),
+    [monthsData]
+  );
+  const currentTotal = useMemo(
+    () => monthsData.find((m) => m.isCurrent)?.total || 0,
+    [monthsData]
+  );
 
   return (
     <div className="space-y-6 pb-32 sm:pb-20">
@@ -144,6 +173,7 @@ const ProjectedExpenses = () => {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {monthsData.map((monthData) => {
               const { date, total, isPast, isCurrent, isFuture, hasExpenses } = monthData;
+              const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 
               let cardClass = "border-slate-100 bg-slate-50/60";
               let badgeVariant: "default" | "secondary" | "destructive" = "secondary";
@@ -164,7 +194,7 @@ const ProjectedExpenses = () => {
               }
 
               return (
-                <Link key={date.toISOString()} to={`/month/${date.getFullYear()}/${date.getMonth() + 1}`} className="block">
+                <Link key={monthKey} to={`/month/${date.getFullYear()}/${date.getMonth() + 1}`} className="block">
                   <div
                     className={`rounded-2xl border p-4 transition-transform hover:-translate-y-1 hover:shadow-md ${cardClass}`}
                   >
