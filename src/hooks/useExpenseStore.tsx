@@ -74,8 +74,6 @@ const DEFAULT_CATEGORIES: Category[] = [
 
 const DEFAULT_PROJECTS: Project[] = [
   { id: 'personal', name: 'Gastos personales', color: '#2563EB' },
-  { id: 'business', name: 'Emprendimiento', color: '#0EA5E9' },
-  { id: 'new-home', name: 'Casa nueva', color: '#10B981' },
 ];
 
 interface ExpenseContextValue {
