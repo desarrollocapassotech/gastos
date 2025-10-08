@@ -23,8 +23,8 @@ export const EditIncomeModal = ({
   onClose,
   onDelete,
 }: EditIncomeModalProps) => {
-  const [amount, setAmount] = useState(
-    formatCurrencyInput(income.amount.toFixed(2))
+  const [amount, setAmount] = useState(() =>
+    formatCurrencyInput(income.amount.toFixed(2).replace('.', ','))
   );
   const [description, setDescription] = useState(income.description);
   const [date, setDate] = useState(income.date);
