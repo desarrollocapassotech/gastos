@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { ArrowLeft, Calendar, TrendingUp, TrendingDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useExpenseStore, Project } from "@/hooks/useExpenseStore";
 import { formatCurrency, formatMonth } from "@/lib/formatters";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -15,6 +15,8 @@ import {
 const ProjectedExpenses = () => {
   const { getTotalForMonth, projects } = useExpenseStore();
   const [selectedProjectId, setSelectedProjectId] = useState<string | "all">("all");
+  const [searchMonth, setSearchMonth] = useState<string>("");
+  const navigate = useNavigate();
 
   const projectFilter = selectedProjectId === "all" ? null : selectedProjectId;
   const selectedProject: Project | null = useMemo(() => {
@@ -37,8 +39,8 @@ const ProjectedExpenses = () => {
 
   const months = useMemo(
     () =>
-      Array.from({ length: 12 }, (_, index) =>
-        new Date(currentYear, currentMonth + index - 6, 1)
+      Array.from({ length: 14 }, (_, index) =>
+        new Date(currentYear, currentMonth + index - 1, 1)
       ),
     [currentMonth, currentYear]
   );
@@ -169,6 +171,42 @@ const ProjectedExpenses = () => {
             <h2 className="text-base font-semibold text-slate-900">Desglose mensual</h2>
             <span className="text-xs font-medium text-slate-500">{monthsData.length} meses</span>
           </div>
+
+          <form
+            className="mb-4 flex flex-col gap-2 rounded-2xl bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between"
+            onSubmit={(event: FormEvent<HTMLFormElement>) => {
+              event.preventDefault();
+              if (!searchMonth) return;
+
+              const [year, month] = searchMonth.split("-");
+              if (!year || !month) return;
+
+              navigate(`/month/${year}/${Number(month)}`);
+            }}
+          >
+            <div className="flex flex-col">
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Buscar mes específico
+              </span>
+              <span className="text-xs text-slate-500">
+                Ingresa un mes para ver su detalle, incluso si no está en el listado.
+              </span>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <input
+                type="month"
+                value={searchMonth}
+                onChange={(event) => setSearchMonth(event.target.value)}
+                className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              />
+              <button
+                type="submit"
+                className="inline-flex h-10 items-center justify-center rounded-lg bg-sky-600 px-4 text-sm font-semibold text-white transition hover:bg-sky-700"
+              >
+                Ir al mes
+              </button>
+            </div>
+          </form>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {monthsData.map((monthData) => {
