@@ -209,7 +209,7 @@ const ProjectedExpenses = () => {
           </form>
 
           <div
-            className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:grid sm:snap-none sm:overflow-visible sm:pb-0 sm:grid-cols-2 lg:grid-cols-3"
+            className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
           >
             {monthsData.map((monthData) => {
               const { date, total, isPast, isCurrent, isFuture, hasExpenses } = monthData;
