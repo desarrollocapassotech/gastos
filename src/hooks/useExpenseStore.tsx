@@ -534,33 +534,25 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
     [expenses, user]
   );
 
+  const getMonthKeyFromDate = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
   const getExpensesForMonth = useCallback(
     (date: Date) => {
-      const year = date.getFullYear();
-      const month = date.getMonth();
+      const targetMonthKey = getMonthKeyFromDate(date);
 
-      return expenses.filter((expense) => {
-        const expenseDate = new Date(expense.date);
-        return (
-          expenseDate.getFullYear() === year &&
-          expenseDate.getMonth() === month
-        );
-      });
+      return expenses.filter(
+        (expense) => expense.date.slice(0, 7) === targetMonthKey
+      );
     },
     [expenses]
   );
 
   const getIncomesForMonth = useCallback(
     (date: Date) => {
-      const year = date.getFullYear();
-      const month = date.getMonth();
+      const targetMonthKey = getMonthKeyFromDate(date);
 
-      return incomes.filter((income) => {
-        const incomeDate = new Date(income.date);
-        return (
-          incomeDate.getFullYear() === year && incomeDate.getMonth() === month
-        );
-      });
+      return incomes.filter((income) => income.date.slice(0, 7) === targetMonthKey);
     },
     [incomes]
   );
