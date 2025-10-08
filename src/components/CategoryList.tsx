@@ -13,9 +13,13 @@ interface Category {
 
 interface CategoryListProps {
   categories: Category[];
+  onCategoryClick?: (categoryName: string) => void;
 }
 
-export const CategoryList: React.FC<CategoryListProps> = ({ categories }) => {
+export const CategoryList: React.FC<CategoryListProps> = ({
+  categories,
+  onCategoryClick,
+}) => {
   const navigate = useNavigate();
 
   if (categories.length === 0) {
@@ -28,6 +32,11 @@ export const CategoryList: React.FC<CategoryListProps> = ({ categories }) => {
   }
 
   const handleCategoryClick = (categoryName: string) => {
+    if (onCategoryClick) {
+      onCategoryClick(categoryName);
+      return;
+    }
+
     navigate(`/category/${encodeURIComponent(categoryName)}`);
   };
 

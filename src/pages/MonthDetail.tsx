@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ArrowLeft, Calendar, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useParams, Link, useNavigate } from "react-router-dom";
@@ -24,7 +24,50 @@ const MonthDetail = () => {
     return projects.find((project) => project.id === projectFilter) ?? null;
   }, [projectFilter, projects]);
 
-  if (!year || !month) {
+  const selectedDate = useMemo(() => {
+    if (!year || !month) {
+      return null;
+    }
+
+    const parsedYear = parseInt(year, 10);
+    const parsedMonth = parseInt(month, 10);
+
+    if (Number.isNaN(parsedYear) || Number.isNaN(parsedMonth)) {
+      return null;
+    }
+
+    return new Date(parsedYear, parsedMonth - 1, 1);
+  }, [month, year]);
+  const totalAmount = selectedDate ? getTotalForMonth(selectedDate, projectFilter) : 0;
+  const categoriesWithTotals = selectedDate ? getCategoriesWithTotals(selectedDate, projectFilter) : [];
+  const monthText = selectedDate ? formatMonth(selectedDate) : "";
+  const categoriesCount = categoriesWithTotals.length;
+  const daysInMonth = selectedDate
+    ? new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate()
+    : 0;
+  const dailyAverage = daysInMonth > 0 ? totalAmount / daysInMonth : 0;
+  const topCategory =
+    categoriesWithTotals.length > 0
+      ? categoriesWithTotals.reduce((prev, current) => (current.total > prev.total ? current : prev), categoriesWithTotals[0])
+      : null;
+
+  const handleCategoryClick = useCallback(
+    (categoryName: string) => {
+      if (!selectedDate) {
+        return;
+      }
+
+      const searchParams = new URLSearchParams({
+        year: String(selectedDate.getFullYear()),
+        month: String(selectedDate.getMonth() + 1),
+      });
+
+      navigate(`/category/${encodeURIComponent(categoryName)}?${searchParams.toString()}`);
+    },
+    [navigate, selectedDate]
+  );
+
+  if (!selectedDate) {
     return (
       <div className="space-y-6 pb-32 sm:pb-20">
         <div className="rounded-3xl border border-slate-100 bg-white p-10 text-center shadow-sm">
@@ -37,18 +80,6 @@ const MonthDetail = () => {
       </div>
     );
   }
-
-  const selectedDate = new Date(parseInt(year), parseInt(month) - 1, 1);
-  const totalAmount = getTotalForMonth(selectedDate, projectFilter);
-  const categoriesWithTotals = getCategoriesWithTotals(selectedDate, projectFilter);
-  const monthText = formatMonth(selectedDate);
-  const categoriesCount = categoriesWithTotals.length;
-  const daysInMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
-  const dailyAverage = daysInMonth > 0 ? totalAmount / daysInMonth : 0;
-  const topCategory =
-    categoriesWithTotals.length > 0
-      ? categoriesWithTotals.reduce((prev, current) => (current.total > prev.total ? current : prev), categoriesWithTotals[0])
-      : null;
 
   return (
     <div className="space-y-6 pb-32 sm:pb-20">
@@ -137,7 +168,10 @@ const MonthDetail = () => {
               <p>No hay gastos registrados en este mes.</p>
             </div>
           ) : (
-            <CategoryList categories={categoriesWithTotals} />
+            <CategoryList
+              categories={categoriesWithTotals}
+              onCategoryClick={handleCategoryClick}
+            />
           )}
         </div>
       </section>
