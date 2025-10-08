@@ -40,7 +40,9 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
   onDelete,
 }) => {
   const { projects } = useExpenseStore();
-  const [amount, setAmount] = useState(formatCurrencyInput(expense.amount.toFixed(2)));
+  const [amount, setAmount] = useState(() =>
+    formatCurrencyInput(expense.amount.toFixed(2).replace('.', ','))
+  );
   const [category, setCategory] = useState(expense.category);
   const [description, setDescription] = useState(expense.description);
   const [date, setDate] = useState(expense.date);
