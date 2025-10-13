@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "26011004334-63dtd56hv43liu0bmkhmcj9kadudtfbj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "gastos.app",
+            "certificate_hash": "a2d60258105b15d2908de44f3b3a9d24436ef6e2"
+          }
+        },
+        {
+          "client_id": "26011004334-rltke9crev5lt55agjodl5jml9jo7lq3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "gastos.app",
+            "certificate_hash": "66a25e3973daa6a33ece163ec23a9f40375c8dae"
+          }
+        },
+        {
           "client_id": "26011004334-vicibreic28fhe1ao2q9j9116efgnnbd.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
