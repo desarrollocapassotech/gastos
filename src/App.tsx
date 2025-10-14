@@ -19,6 +19,7 @@ import AddExpense from "./pages/AddExpense";
 import AddIncome from "./pages/AddIncome";
 import Incomes from "./pages/Incomes";
 import Projects from "./pages/Projects";
+import Categories from "./pages/Categories";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
                   <Route path="/projected" element={<ProjectedExpenses />} />
                   <Route path="/incomes" element={<Incomes />} />
                   <Route path="/projects" element={<Projects />} />
+                  <Route path="/categories" element={<Categories />} />
                   <Route path="/expenses/new" element={<AddExpense />} />
                   <Route path="/incomes/new" element={<AddIncome />} />
                   <Route path="/month/:year/:month" element={<MonthDetail />} />

@@ -106,6 +106,11 @@ interface ExpenseContextValue {
     color: string,
     icon: string
   ) => Promise<Category | null>;
+  updateCategory: (
+    id: string,
+    updatedData: Partial<Category>
+  ) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
   addProject: (name: string, color: string) => Promise<Project | null>;
   updateProject: (id: string, updatedData: Partial<Project>) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
@@ -451,9 +456,11 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
   const addCategory = useCallback(
     async (name: string, color: string, icon: string) => {
       if (!user) return null;
+      const trimmedName = name.trim();
+      if (!trimmedName) return null;
       const newCategory: Category = {
         id: Date.now().toString(),
-        name,
+        name: trimmedName,
         color,
         icon,
       };
@@ -469,6 +476,97 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       return newCategory;
     },
     [user]
+  );
+
+  const updateCategory = useCallback(
+    async (id: string, updatedData: Partial<Category>) => {
+      if (!user) return;
+      const existingCategory = categories.find((category) => category.id === id);
+      if (!existingCategory) return;
+
+      try {
+        const sanitizedData: Partial<Category> = { ...updatedData };
+        if (sanitizedData.name) {
+          sanitizedData.name = sanitizedData.name.trim();
+        }
+        await updateDoc(
+          doc(db, 'users', user.uid, 'categories', id),
+          sanitizedData as Record<string, unknown>
+        );
+
+        if (
+          sanitizedData.name &&
+          sanitizedData.name !== existingCategory.name
+        ) {
+          const newName = sanitizedData.name;
+          const oldName = existingCategory.name;
+          const relatedExpenses = expenses.filter(
+            (expense) => expense.category === oldName
+          );
+
+          await Promise.all(
+            relatedExpenses.map((expense) =>
+              updateDoc(
+                doc(
+                  db,
+                  'users',
+                  user.uid,
+                  'months',
+                  expense.date.substring(0, 7),
+                  'expenses',
+                  expense.id
+                ),
+                { category: newName }
+              )
+            )
+          );
+
+          setExpenses((prev) =>
+            prev.map((expense) =>
+              expense.category === oldName
+                ? { ...expense, category: newName }
+                : expense
+            )
+          );
+        }
+
+        setCategories((prev) =>
+          prev.map((category) =>
+            category.id === id ? { ...category, ...sanitizedData } : category
+          )
+        );
+      } catch (e) {
+        console.error('Error updating category', e);
+        throw e;
+      }
+    },
+    [categories, expenses, user]
+  );
+
+  const deleteCategory = useCallback(
+    async (id: string) => {
+      if (!user) return;
+      const category = categories.find((item) => item.id === id);
+      if (!category) return;
+
+      const hasRelatedExpenses = expenses.some(
+        (expense) => expense.category === category.name
+      );
+      if (hasRelatedExpenses) {
+        throw new Error('No puedes eliminar una categoría con gastos asociados.');
+      }
+
+      try {
+        await deleteDoc(doc(db, 'users', user.uid, 'categories', id));
+        setCategories((prev) =>
+          prev.filter((existingCategory) => existingCategory.id !== id)
+        );
+      } catch (e) {
+        console.error('Error deleting category', e);
+        throw e;
+      }
+    },
+    [categories, expenses, user]
   );
 
   const addProject = useCallback(
@@ -634,6 +732,8 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       deleteExpense,
       deleteIncome,
       addCategory,
+      updateCategory,
+      deleteCategory,
       addProject,
       updateProject,
       deleteProject,
@@ -658,6 +758,8 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       deleteExpense,
       deleteIncome,
       addCategory,
+      updateCategory,
+      deleteCategory,
       addProject,
       updateProject,
       deleteProject,

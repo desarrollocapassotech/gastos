@@ -270,13 +270,19 @@ const Index = () => {
 
       <section className="space-y-4">
         <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="flex items-center gap-2 text-base font-semibold text-slate-900">
               <Calendar className="h-5 w-5 text-sky-500" /> Categorías del mes
             </h3>
-            <span className="text-xs font-medium text-slate-500">
-              {formatCurrency(totalCategoriesAmount)} totales
-            </span>
+            <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-slate-500">
+              <span>{formatCurrency(totalCategoriesAmount)} totales</span>
+              <Link
+                to="/categories"
+                className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-600 transition hover:border-sky-200 hover:text-sky-500"
+              >
+                Gestionar
+              </Link>
+            </div>
           </div>
           <CategoryList categories={categoriesWithTotals} />
         </div>

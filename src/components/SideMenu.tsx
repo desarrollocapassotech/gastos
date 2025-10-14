@@ -7,6 +7,7 @@ import {
   Sparkles,
   FolderKanban,
   TrendingUp,
+  Tag,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,7 @@ export function SideMenu() {
     buildCurrentMonthNavigationItem(),
     { to: "/incomes", label: "Ingresos", icon: TrendingUp },
     { to: "/projected", label: "Gastos proyectados", icon: Sparkles },
+    { to: "/categories", label: "Categorías", icon: Tag },
     { to: "/projects", label: "Proyectos", icon: FolderKanban },
   ];
 
