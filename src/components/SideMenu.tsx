@@ -9,6 +9,7 @@ import {
   TrendingUp,
   Tag,
   Scale,
+  ArrowDownUp,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,7 @@ export function SideMenu() {
     { to: "/", label: "Inicio", icon: LayoutDashboard },
     buildCurrentMonthNavigationItem(),
     { to: "/balance", label: "Balance", icon: Scale },
+    { to: "/transfers", label: "Transferencias", icon: ArrowDownUp },
     { to: "/incomes", label: "Ingresos", icon: TrendingUp },
     { to: "/projected", label: "Gastos proyectados", icon: Sparkles },
     { to: "/categories", label: "Categorías", icon: Tag },

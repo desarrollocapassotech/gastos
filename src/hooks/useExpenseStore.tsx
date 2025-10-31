@@ -70,7 +70,8 @@ const DEFAULT_CATEGORIES: Category[] = [
   { id: '9', name: 'Regalos', color: 'pink', icon: '🎁' },
   { id: '10', name: 'Impuestos', color: 'black', icon: '🥷🏻' },
   { id: '11', name: 'Trabajo', color: 'blue', icon: '💻' },
-  { id: '12', name: 'Otros', color: '#64748B', icon: '📦' },
+  { id: '12', name: 'Transferencias', color: '#A855F7', icon: '🔄' },
+  { id: '13', name: 'Otros', color: '#64748B', icon: '📦' },
 ];
 
 const DEFAULT_PROJECTS: Project[] = [
