@@ -55,6 +55,7 @@ export interface Income {
   amount: number;
   description: string;
   date: string;
+  projectId?: string;
 }
 
 const DEFAULT_CATEGORIES: Category[] = [
@@ -117,8 +118,10 @@ interface ExpenseContextValue {
   getExpensesForMonth: (date: Date) => Expense[];
   getIncomesForMonth: (date: Date) => Income[];
   getExpensesForMonthByProject: (date: Date, projectId?: string | null) => Expense[];
+  getIncomesForMonthByProject: (date: Date, projectId?: string | null) => Income[];
   getTotalForMonth: (date: Date, projectId?: string | null) => number;
   getTotalIncomeForMonth: (date: Date) => number;
+  getTotalIncomeForMonthByProject: (date: Date, projectId?: string | null) => number;
   getCategoriesWithTotals: (
     date: Date,
     projectId?: string | null
@@ -248,8 +251,10 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
   const addIncome = useCallback(
     async (incomeData: Omit<Income, 'id' | 'userId'>) => {
       if (!user) return;
+      const fallbackProjectId = incomeData.projectId || projects[0]?.id;
       const newIncome: Income = {
         ...incomeData,
+        projectId: fallbackProjectId,
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         userId: user.uid,
       };
@@ -272,7 +277,7 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
         console.error('Error adding income', e);
       }
     },
-    [user]
+    [projects, user]
   );
 
   const updateExpense = useCallback(
@@ -666,6 +671,19 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
     [getExpensesForMonth]
   );
 
+  const getIncomesForMonthByProject = useCallback(
+    (date: Date, projectId?: string | null) => {
+      const monthlyIncomes = getIncomesForMonth(date);
+      if (!projectId) {
+        return monthlyIncomes;
+      }
+      return monthlyIncomes.filter(
+        (income) => income.projectId === projectId
+      );
+    },
+    [getIncomesForMonth]
+  );
+
   const getTotalForMonth = useCallback(
     (date: Date, projectId?: string | null) => {
       return getExpensesForMonthByProject(date, projectId).reduce(
@@ -684,6 +702,16 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       );
     },
     [getIncomesForMonth]
+  );
+
+  const getTotalIncomeForMonthByProject = useCallback(
+    (date: Date, projectId?: string | null) => {
+      return getIncomesForMonthByProject(date, projectId).reduce(
+        (total, income) => total + income.amount,
+        0
+      );
+    },
+    [getIncomesForMonthByProject]
   );
 
   const getCategoriesWithTotals = useCallback(
@@ -740,8 +768,10 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       getExpensesForMonth,
       getIncomesForMonth,
       getExpensesForMonthByProject,
+      getIncomesForMonthByProject,
       getTotalForMonth,
       getTotalIncomeForMonth,
+      getTotalIncomeForMonthByProject,
       getCategoriesWithTotals,
       getProjectedExpenses,
     }),
@@ -766,8 +796,10 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       getExpensesForMonth,
       getIncomesForMonth,
       getExpensesForMonthByProject,
+      getIncomesForMonthByProject,
       getTotalForMonth,
       getTotalIncomeForMonth,
+      getTotalIncomeForMonthByProject,
       getCategoriesWithTotals,
       getProjectedExpenses,
     ]

@@ -1,13 +1,15 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Calendar, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/DatePicker";
 import { useExpenseStore } from "@/hooks/useExpenseStore";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from "@/lib/formatters";
+import { sortAccountsByName } from "@/lib/accounts";
 import { cn } from "@/lib/utils";
 
 const formatDateValue = (date: Date) =>
@@ -35,7 +37,7 @@ const parseDateValue = (value: string) => {
 
 const AddIncome = () => {
   const navigate = useNavigate();
-  const { addIncome } = useExpenseStore();
+  const { addIncome, projects } = useExpenseStore();
   const { toast } = useToast();
 
   const amountInputRef = useRef<HTMLInputElement>(null);
@@ -43,7 +45,16 @@ const AddIncome = () => {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(() => formatDateValue(new Date()));
+  const [projectId, setProjectId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const sortedProjects = useMemo(() => sortAccountsByName(projects), [projects]);
+
+  useEffect(() => {
+    if (!projectId && sortedProjects.length > 0) {
+      setProjectId(sortedProjects[0].id);
+    }
+  }, [projectId, sortedProjects]);
 
   useEffect(() => {
     amountInputRef.current?.focus();
@@ -67,10 +78,10 @@ const AddIncome = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!amount || !description) {
+    if (!amount || !description || !projectId) {
       toast({
         title: "Faltan datos",
-        description: "Completa el monto y una descripción",
+        description: "Completa el monto, una descripción y la cuenta",
         variant: "destructive",
       });
       return;
@@ -93,6 +104,7 @@ const AddIncome = () => {
         amount: numericAmount,
         description,
         date,
+        projectId,
       });
 
       toast({
@@ -103,6 +115,7 @@ const AddIncome = () => {
       setAmount("");
       setDescription("");
       setDate(formatDateValue(new Date()));
+      setProjectId(sortedProjects[0]?.id ?? null);
       navigate("/", { replace: true });
     } catch (error) {
       toast({
@@ -147,6 +160,44 @@ const AddIncome = () => {
           </div>
         </div>
       </div>
+
+      <section className="space-y-4">
+        <div className="space-y-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-sky-600">
+            Cuenta
+          </h2>
+          <p className="text-sm text-slate-500">
+            Organiza tus ingresos por cuenta para analizarlos fácilmente
+          </p>
+          <Select value={projectId ?? undefined} onValueChange={setProjectId}>
+            <SelectTrigger id="account" className="h-12">
+              <SelectValue placeholder="Selecciona una cuenta" />
+            </SelectTrigger>
+            <SelectContent>
+              {sortedProjects.map((project) => (
+                <SelectItem key={project.id} value={project.id}>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="inline-flex h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: project.color }}
+                    />
+                    {project.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-slate-500">
+            ¿Necesitas otra cuenta?{' '}
+            <Link
+              to="/accounts"
+              className="font-medium text-sky-600 underline hover:text-sky-500"
+            >
+              Gestionar cuentas
+            </Link>
+          </p>
+        </div>
+      </section>
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">

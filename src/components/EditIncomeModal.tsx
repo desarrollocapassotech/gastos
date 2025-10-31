@@ -1,12 +1,13 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/DatePicker";
 import { formatCurrencyInput, parseCurrencyInput } from "@/lib/formatters";
 import { Loader2 } from "lucide-react";
-import type { Income } from "@/hooks/useExpenseStore";
+import { useExpenseStore, type Income, type Project } from "@/hooks/useExpenseStore";
 
 interface EditIncomeModalProps {
   income: Income;
@@ -23,13 +24,21 @@ export const EditIncomeModal = ({
   onClose,
   onDelete,
 }: EditIncomeModalProps) => {
+  const { projects } = useExpenseStore();
   const [amount, setAmount] = useState(() =>
     formatCurrencyInput(income.amount.toFixed(2).replace('.', ','))
   );
   const [description, setDescription] = useState(income.description);
   const [date, setDate] = useState(income.date);
+  const [projectId, setProjectId] = useState<string | undefined>(income.projectId);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    if (!projectId && projects.length > 0) {
+      setProjectId(projects[0].id);
+    }
+  }, [projectId, projects]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -48,6 +57,7 @@ export const EditIncomeModal = ({
         amount: numericAmount,
         description,
         date,
+        projectId,
       });
       onClose();
     } catch (error) {
@@ -110,6 +120,31 @@ export const EditIncomeModal = ({
                 required
                 placeholder="Ejemplo: Sueldo"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="income-account">Cuenta</Label>
+              <Select
+                value={projectId ?? projects[0]?.id ?? ''}
+                onValueChange={(value) => setProjectId(value || undefined)}
+              >
+                <SelectTrigger id="income-account" className="h-10">
+                  <SelectValue placeholder="Selecciona una cuenta" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map((project: Project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="inline-flex h-2.5 w-2.5 rounded-full"
+                          style={{ backgroundColor: project.color }}
+                        />
+                        {project.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

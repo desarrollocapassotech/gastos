@@ -15,9 +15,11 @@ const Index = () => {
   const {
     projects,
     getExpensesForMonthByProject,
+    getIncomesForMonthByProject,
     getTotalForMonth,
     getCategoriesWithTotals,
     getTotalIncomeForMonth,
+    getTotalIncomeForMonthByProject,
     updateExpense,
   } = useExpenseStore();
   const [selectedProjectId, setSelectedProjectId] = useState<string | "all">("all");
@@ -30,7 +32,9 @@ const Index = () => {
   const monthlyExpenses = getExpensesForMonthByProject(selectedMonth, projectFilter);
   const monthlyTotal = getTotalForMonth(selectedMonth, projectFilter);
   const categoriesWithTotals = getCategoriesWithTotals(selectedMonth, projectFilter);
-  const monthlyIncomeTotal = getTotalIncomeForMonth(selectedMonth);
+  const monthlyIncomeTotal = projectFilter 
+    ? getTotalIncomeForMonthByProject(selectedMonth, projectFilter)
+    : getTotalIncomeForMonth(selectedMonth);
   const balance = monthlyIncomeTotal - monthlyTotal;
   const balanceIsPositive = balance >= 0;
 
