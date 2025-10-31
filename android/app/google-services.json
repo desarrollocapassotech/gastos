@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "26011004334",
+    "project_id": "mis-gastos-mes",
+    "storage_bucket": "mis-gastos-mes.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:26011004334:android:3d8a017746211d4ae36c3f",
+        "android_client_info": {
+          "package_name": "gastos.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "26011004334-63dtd56hv43liu0bmkhmcj9kadudtfbj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "gastos.app",
+            "certificate_hash": "a2d60258105b15d2908de44f3b3a9d24436ef6e2"
+          }
+        },
+        {
+          "client_id": "26011004334-rltke9crev5lt55agjodl5jml9jo7lq3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "gastos.app",
+            "certificate_hash": "66a25e3973daa6a33ece163ec23a9f40375c8dae"
+          }
+        },
+        {
+          "client_id": "26011004334-vicibreic28fhe1ao2q9j9116efgnnbd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "gastos.app",
+            "certificate_hash": "5144e16d00018c88f5ede96a0fa0fbe7701a8c2b"
+          }
+        },
+        {
+          "client_id": "26011004334-d792qgfbthsmce7abrq8821101hkklbr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkL5cjW5ElYZX28cB8_LRyGIdcmwVpcvM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "26011004334-d792qgfbthsmce7abrq8821101hkklbr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
