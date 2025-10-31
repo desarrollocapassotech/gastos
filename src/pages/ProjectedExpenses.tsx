@@ -132,21 +132,21 @@ const ProjectedExpenses = () => {
           </div>
           <div className="mt-4 rounded-2xl bg-white/15 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-white/70">
-              Proyecto seleccionado
+              Cuenta seleccionada
             </p>
             <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-white/80">
-                {selectedProject ? selectedProject.name : "Todos los proyectos"}
+                {selectedProject ? selectedProject.name : "Todas las cuentas"}
               </p>
               <Select
                 value={selectedProjectId}
                 onValueChange={(value) => setSelectedProjectId(value as string | "all")}
               >
                 <SelectTrigger className="h-10 w-full border-white/40 bg-white/20 text-left text-sm font-medium text-white sm:w-60">
-                  <SelectValue placeholder="Selecciona un proyecto" />
+                  <SelectValue placeholder="Selecciona una cuenta" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos los proyectos</SelectItem>
+                  <SelectItem value="all">Todas las cuentas</SelectItem>
                   {projects.map((project) => (
                     <SelectItem key={project.id} value={project.id}>
                       <div className="flex items-center gap-2">

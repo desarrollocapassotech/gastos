@@ -8,7 +8,7 @@ import { Expense, Project, useExpenseStore } from "@/hooks/useExpenseStore";
 import { formatCompactCurrency, formatCurrency } from "@/lib/formatters";
 import { EditExpenseModal } from "@/components/EditExpenseModal";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { sortProjectsByName } from "@/lib/projects";
+import { sortAccountsByName } from "@/lib/accounts";
 
 const Index = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -25,7 +25,7 @@ const Index = () => {
 
   const projectFilter = selectedProjectId === "all" ? null : selectedProjectId;
 
-  const sortedProjects = useMemo(() => sortProjectsByName(projects), [projects]);
+  const sortedProjects = useMemo(() => sortAccountsByName(projects), [projects]);
 
   const monthlyExpenses = getExpensesForMonthByProject(selectedMonth, projectFilter);
   const monthlyTotal = getTotalForMonth(selectedMonth, projectFilter);
@@ -121,14 +121,14 @@ const Index = () => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-sky-600">
-              Proyectos
+              Cuentas
             </p>
             <h2 className="text-sm font-semibold text-slate-900">
-              Filtra los gastos por proyecto
+              Filtra los gastos por cuenta
             </h2>
           </div>
           <Link
-            to="/projects"
+            to="/accounts"
             className="text-xs font-semibold text-sky-600 underline hover:text-sky-500"
           >
             Gestionar

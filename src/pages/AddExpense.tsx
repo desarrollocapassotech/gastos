@@ -12,7 +12,7 @@ import { useExpenseStore } from "@/hooks/useExpenseStore";
 import { useToast } from "@/hooks/use-toast";
 import { DatePicker } from "@/components/DatePicker";
 import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from "@/lib/formatters";
-import { sortProjectsByName } from "@/lib/projects";
+import { sortAccountsByName } from "@/lib/accounts";
 
 const formatDateLabel = (date: Date) =>
   date.toLocaleDateString("es", {
@@ -56,7 +56,7 @@ const AddExpense = () => {
   const [projectId, setProjectId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const sortedProjects = useMemo(() => sortProjectsByName(projects), [projects]);
+  const sortedProjects = useMemo(() => sortAccountsByName(projects), [projects]);
 
   useEffect(() => {
     amountInputRef.current?.focus();
@@ -111,7 +111,7 @@ const AddExpense = () => {
     if (!amount || !category || !description || !projectId) {
       toast({
         title: "Faltan datos",
-        description: "Completa el monto, la categoría, el comentario y el proyecto",
+        description: "Completa el monto, la categoría, el comentario y la cuenta",
         variant: "destructive",
       });
       return;
@@ -223,14 +223,14 @@ const AddExpense = () => {
       <section className="space-y-4">
         <div className="space-y-2">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-sky-600">
-            Proyecto
+            Cuenta
           </h2>
           <p className="text-sm text-slate-500">
-            Organiza tus gastos por proyecto para analizarlos fácilmente
+            Organiza tus gastos por cuenta para analizarlos fácilmente
           </p>
           <Select value={projectId ?? undefined} onValueChange={setProjectId}>
             <SelectTrigger id="project" className="h-12">
-              <SelectValue placeholder="Selecciona un proyecto" />
+              <SelectValue placeholder="Selecciona una cuenta" />
             </SelectTrigger>
             <SelectContent>
               {sortedProjects.map((project) => (
@@ -247,12 +247,12 @@ const AddExpense = () => {
             </SelectContent>
           </Select>
           <p className="text-xs text-slate-500">
-            ¿Necesitas otro proyecto?{' '}
+            ¿Necesitas otra cuenta?{' '}
             <Link
-              to="/projects"
+              to="/accounts"
               className="font-medium text-sky-600 underline hover:text-sky-500"
             >
-              Gestionar proyectos
+              Gestionar cuentas
             </Link>
           </p>
         </div>

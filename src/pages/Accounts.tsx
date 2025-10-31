@@ -9,34 +9,34 @@ import { useExpenseStore, Project } from "@/hooks/useExpenseStore";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
 import { Badge } from "@/components/ui/badge";
-import { sortProjectsByName } from "@/lib/projects";
+import { sortAccountsByName } from "@/lib/accounts";
 
-interface ProjectEditValues {
+interface AccountEditValues {
   name: string;
   color: string;
 }
 
-const DEFAULT_NEW_PROJECT_COLOR = "#2563EB";
+const DEFAULT_NEW_ACCOUNT_COLOR = "#2563EB";
 
-const Projects = () => {
+const Accounts = () => {
   const navigate = useNavigate();
   const { projects, expenses, addProject, updateProject, deleteProject } = useExpenseStore();
   const { toast } = useToast();
 
   const [newProjectName, setNewProjectName] = useState("");
-  const [newProjectColor, setNewProjectColor] = useState(DEFAULT_NEW_PROJECT_COLOR);
-  const [projectEdits, setProjectEdits] = useState<Record<string, ProjectEditValues>>({});
+  const [newProjectColor, setNewProjectColor] = useState(DEFAULT_NEW_ACCOUNT_COLOR);
+  const [projectEdits, setProjectEdits] = useState<Record<string, AccountEditValues>>({});
 
   useEffect(() => {
     setProjectEdits(
-      projects.reduce<Record<string, ProjectEditValues>>((acc, project) => {
+      projects.reduce<Record<string, AccountEditValues>>((acc, project) => {
         acc[project.id] = { name: project.name, color: project.color };
         return acc;
       }, {})
     );
   }, [projects]);
 
-  const sortedProjects = useMemo(() => sortProjectsByName(projects), [projects]);
+  const sortedProjects = useMemo(() => sortAccountsByName(projects), [projects]);
 
   const projectSummaries = useMemo(
     () =>
@@ -60,7 +60,7 @@ const Projects = () => {
     if (!newProjectName.trim()) {
       toast({
         title: "Nombre requerido",
-        description: "Ingresa un nombre para el proyecto.",
+        description: "Ingresa un nombre para la cuenta.",
         variant: "destructive",
       });
       return;
@@ -69,15 +69,15 @@ const Projects = () => {
     try {
       await addProject(newProjectName.trim(), newProjectColor);
       toast({
-        title: "Proyecto creado",
-        description: "Ahora puedes asignar gastos a este proyecto.",
+        title: "Cuenta creada",
+        description: "Ahora puedes asignar gastos a esta cuenta.",
       });
       setNewProjectName("");
-      setNewProjectColor(DEFAULT_NEW_PROJECT_COLOR);
+      setNewProjectColor(DEFAULT_NEW_ACCOUNT_COLOR);
     } catch (error) {
       console.error(error);
       toast({
-        title: "No se pudo crear el proyecto",
+        title: "No se pudo crear la cuenta",
         description: "Inténtalo nuevamente en unos instantes.",
         variant: "destructive",
       });
@@ -89,7 +89,7 @@ const Projects = () => {
     if (!edits || !edits.name.trim()) {
       toast({
         title: "Datos incompletos",
-        description: "El proyecto debe tener un nombre.",
+        description: "La cuenta debe tener un nombre.",
         variant: "destructive",
       });
       return;
@@ -101,7 +101,7 @@ const Projects = () => {
         color: edits.color,
       });
       toast({
-        title: "Proyecto actualizado",
+        title: "Cuenta actualizada",
         description: "Los cambios se guardaron correctamente.",
       });
     } catch (error) {
@@ -118,12 +118,12 @@ const Projects = () => {
     try {
       await deleteProject(project.id);
       toast({
-        title: "Proyecto eliminado",
-        description: "Los gastos permanecerán registrados en otros proyectos.",
+        title: "Cuenta eliminada",
+        description: "Los gastos permanecerán registrados en otras cuentas.",
       });
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "No se pudo eliminar el proyecto.";
+        error instanceof Error ? error.message : "No se pudo eliminar la cuenta.";
       toast({
         title: "Acción no disponible",
         description: message,
@@ -146,7 +146,7 @@ const Projects = () => {
               <span className="sr-only">Volver</span>
             </button>
             <span className="rounded-full bg-white/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.35em] text-white">
-              Proyectos
+              Cuentas
             </span>
           </div>
 
@@ -154,10 +154,10 @@ const Projects = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/70">
                 <FolderKanban className="h-4 w-4" />
-                Gestión de proyectos
+                Gestión de cuentas
               </div>
               <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">
-                {totalProjects} {totalProjects === 1 ? "proyecto" : "proyectos"}
+                {totalProjects} {totalProjects === 1 ? "cuenta" : "cuentas"}
               </h1>
               <p className="text-xs text-white/70">
                 Seguimiento total: {formatCurrency(totalTracked)}
@@ -179,15 +179,15 @@ const Projects = () => {
         <Card className="border border-slate-200/70 bg-white/80 shadow-sm">
           <CardHeader>
             <CardTitle className="text-base font-semibold text-slate-900">
-              Crear un proyecto
+              Crear una cuenta
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleAddProject} className="grid gap-4 sm:grid-cols-[1fr_auto_auto] sm:items-end">
               <div className="space-y-2">
-                <Label htmlFor="project-name">Nombre</Label>
+                <Label htmlFor="account-name">Nombre</Label>
                 <Input
-                  id="project-name"
+                  id="account-name"
                   value={newProjectName}
                   onChange={(event) => setNewProjectName(event.target.value)}
                   placeholder="Ej. Casa nueva"
@@ -195,9 +195,9 @@ const Projects = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="project-color">Color</Label>
+                <Label htmlFor="account-color">Color</Label>
                 <Input
-                  id="project-color"
+                  id="account-color"
                   type="color"
                   value={newProjectColor}
                   onChange={(event) => setNewProjectColor(event.target.value)}
@@ -216,9 +216,9 @@ const Projects = () => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-sky-600">
-              Proyectos activos
+              Cuentas activas
             </p>
-            <h2 className="text-xl font-semibold text-slate-900">Gestiona tus proyectos</h2>
+            <h2 className="text-xl font-semibold text-slate-900">Gestiona tus cuentas</h2>
           </div>
         </div>
 
@@ -226,7 +226,7 @@ const Projects = () => {
           <div className="rounded-3xl border border-dashed border-slate-200 bg-white/70 p-10 text-center shadow-sm">
             <div className="mb-2 text-3xl">📂</div>
             <p className="text-sm text-slate-500">
-              Crea tu primer proyecto para organizar los gastos.
+              Crea tu primera cuenta para organizar los gastos.
             </p>
           </div>
         ) : (
@@ -309,7 +309,7 @@ const Projects = () => {
                         disabled={hasExpenses}
                         title={
                           hasExpenses
-                            ? "No puedes eliminar un proyecto con gastos asociados"
+                            ? "No puedes eliminar una cuenta con gastos asociados"
                             : undefined
                         }
                       >
@@ -327,4 +327,5 @@ const Projects = () => {
   );
 };
 
-export default Projects;
+export default Accounts;
+

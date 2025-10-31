@@ -618,7 +618,7 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
         (expense) => expense.projectId === id
       );
       if (hasRelatedExpenses) {
-        throw new Error('No puedes eliminar un proyecto con gastos asociados.');
+        throw new Error('No puedes eliminar una cuenta con gastos asociados.');
       }
       try {
         await deleteDoc(doc(db, 'users', user.uid, 'projects', id));

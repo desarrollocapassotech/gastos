@@ -125,13 +125,13 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="project">Proyecto</Label>
+              <Label htmlFor="project">Cuenta</Label>
               <Select
                 value={projectId ?? projects[0]?.id ?? ''}
                 onValueChange={(value) => setProjectId(value || undefined)}
               >
                 <SelectTrigger id="project" className="h-10">
-                  <SelectValue placeholder="Selecciona un proyecto" />
+                  <SelectValue placeholder="Selecciona una cuenta" />
                 </SelectTrigger>
                 <SelectContent>
                   {projects.map((project: Project) => (

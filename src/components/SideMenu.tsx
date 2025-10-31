@@ -61,7 +61,7 @@ export function SideMenu() {
     { to: "/incomes", label: "Ingresos", icon: TrendingUp },
     { to: "/projected", label: "Gastos proyectados", icon: Sparkles },
     { to: "/categories", label: "Categorías", icon: Tag },
-    { to: "/projects", label: "Proyectos", icon: FolderKanban },
+    { to: "/accounts", label: "Cuentas", icon: FolderKanban },
   ];
 
   const handleSignOut = async () => {

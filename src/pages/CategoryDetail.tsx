@@ -121,7 +121,7 @@ const CategoryDetail = () => {
                 {expensesCount} {expensesCount === 1 ? "gasto" : "gastos"} registrados este mes
               </p>
               <p className="text-xs text-white/70">
-                Proyecto: {selectedProject ? selectedProject.name : "Todos"}
+                Cuenta: {selectedProject ? selectedProject.name : "Todos"}
               </p>
           </div>
           </div>
@@ -161,10 +161,10 @@ const CategoryDetail = () => {
                 onValueChange={(value) => setSelectedProjectId(value as string | "all")}
               >
                 <SelectTrigger className="h-9 w-full border-slate-200 text-left text-xs font-medium text-slate-600 sm:w-56">
-                  <SelectValue placeholder="Filtrar por proyecto" />
+                  <SelectValue placeholder="Filtrar por cuenta" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos los proyectos</SelectItem>
+                  <SelectItem value="all">Todas las cuentas</SelectItem>
                   {projects.map((project) => (
                     <SelectItem key={project.id} value={project.id}>
                       <div className="flex items-center gap-2">
