@@ -20,6 +20,7 @@ import AddIncome from "./pages/AddIncome";
 import Incomes from "./pages/Incomes";
 import Accounts from "./pages/Accounts";
 import Categories from "./pages/Categories";
+import Balance from "./pages/Balance";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
               <Route element={<PrivateRoute />}>
                 <Route element={<Layout />}>
                   <Route index element={<Index />} />
+                  <Route path="/balance" element={<Balance />} />
                   <Route path="/projected" element={<ProjectedExpenses />} />
                   <Route path="/incomes" element={<Incomes />} />
                   <Route path="/accounts" element={<Accounts />} />
