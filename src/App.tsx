@@ -15,6 +15,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ExpenseProvider } from "@/hooks/useExpenseStore";
 import Layout from "@/components/Layout";
 import ScrollToTop from "@/components/ScrollToTop";
+import BackButtonHandler from "@/components/BackButtonHandler";
 import AddExpense from "./pages/AddExpense";
 import AddIncome from "./pages/AddIncome";
 import Incomes from "./pages/Incomes";
@@ -34,6 +35,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
+            <BackButtonHandler />
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Calendar, Plus, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { ExpenseChart } from "@/components/ExpenseChart";
@@ -49,6 +49,18 @@ const Index = () => {
 
   const summaryLabel = selectedProject ? selectedProject.name : "Total mensual";
 
+  const handleCategoryClick = useCallback(
+    (categoryName: string) => {
+      const searchParams = new URLSearchParams({
+        year: String(selectedMonth.getFullYear()),
+        month: String(selectedMonth.getMonth() + 1),
+      });
+
+      navigate(`/category/${encodeURIComponent(categoryName)}?${searchParams.toString()}`);
+    },
+    [navigate, selectedMonth]
+  );
+
   return (
     <div className="space-y-6 pb-32 sm:pb-20">
       <section className="space-y-4">
@@ -62,8 +74,6 @@ const Index = () => {
             <h1 className="inline-flex items-center rounded-2xl bg-white/15 px-4 py-2 text-3xl font-semibold leading-tight shadow-inner sm:text-4xl">
               {formatCurrency(monthlyTotal)}
             </h1>
-            <p className="text-sm capitalize text-white/80">{monthText}</p>
-            <p className="text-xs text-white/70">Controla tus finanzas día a día.</p>
           </div>
 
           <div className="mt-6 flex flex-col items-center gap-6">
@@ -202,7 +212,7 @@ const Index = () => {
               </Link>
             </div>
           </div>
-          <CategoryList categories={categoriesWithTotals} />
+          <CategoryList categories={categoriesWithTotals} onCategoryClick={handleCategoryClick} />
         </div>
 
         {monthlyExpenses.length === 0 && (

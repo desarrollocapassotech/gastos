@@ -6,6 +6,7 @@ import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { Expense, Project, useExpenseStore } from "@/hooks/useExpenseStore";
 import { formatCurrency } from "@/lib/formatters";
 import { EditExpenseModal } from "@/components/EditExpenseModal";
+import { MonthNavigator } from "@/components/MonthNavigator";
 import {
   Select,
   SelectContent,
@@ -39,6 +40,15 @@ const CategoryDetail = () => {
     return new Date();
   }, [monthParam, yearParam]);
   const monthText = selectedMonth.toLocaleDateString("es", { month: "long", year: "numeric" });
+
+  const handleMonthChange = (date: Date) => {
+    const params = new URLSearchParams(location.search);
+    params.set("year", String(date.getFullYear()));
+    params.set("month", String(date.getMonth() + 1));
+    navigate(`/category/${encodeURIComponent(category ?? "")}?${params.toString()}`, {
+      replace: true,
+    });
+  };
 
   const categoryInfo = categories.find((cat) => cat.name === category);
   const projectFilter = selectedProjectId === "all" ? null : selectedProjectId;
@@ -143,6 +153,10 @@ const CategoryDetail = () => {
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="space-y-4">
+        <MonthNavigator selectedMonth={selectedMonth} onMonthChange={handleMonthChange} />
       </section>
 
       <section className="space-y-4">

@@ -2,8 +2,9 @@ import { useEffect, useState, type SVGProps, type FormEvent } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import FullScreenLoader from '@/components/FullScreenLoader';
+import { Lock, LogIn, Mail, PiggyBank, Loader2 } from 'lucide-react';
 
 const GoogleIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
@@ -32,6 +33,8 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
 
   useEffect(() => {
     if (!profileChecked) return;
@@ -40,17 +43,29 @@ const Login = () => {
   }, [user, profile, navigate, profileChecked]);
 
   const handleGoogle = async () => {
-    await signInWithGoogle();
+    setError(null);
+    setIsGoogleLoading(true);
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      console.error(err);
+      setError('No pudimos iniciar sesión con Google.');
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   const handleEmailLogin = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsEmailLoading(true);
     try {
       await signInWithEmail(email, password);
     } catch (err) {
       console.error(err);
       setError('No pudimos iniciar sesión con esas credenciales.');
+    } finally {
+      setIsEmailLoading(false);
     }
   };
 
@@ -59,40 +74,93 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-sm space-y-4">
-        <Button onClick={handleGoogle} className="w-full" variant="outline">
-          <GoogleIcon className="mr-2 h-4 w-4" /> Ingresar con Google
-        </Button>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <div className="flex-1 border-t" />
-          <span>o</span>
-          <div className="flex-1 border-t" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-100 p-4">
+      <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-sky-200/50 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-indigo-200/50 blur-3xl" />
+
+      <div className="relative w-full max-w-sm space-y-6">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/30">
+            <PiggyBank className="h-7 w-7" />
+          </span>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600">
+              Mis gastos
+            </p>
+            <h1 className="mt-1 text-2xl font-semibold text-slate-900">Bienvenido de nuevo</h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Iniciá sesión para ver tu panel financiero.
+            </p>
+          </div>
         </div>
-        <form className="space-y-3" onSubmit={handleEmailLogin}>
-          <Input
-            type="email"
-            placeholder="Correo electrónico"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full">
-            Ingresar con email y contraseña
+
+        <div className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-xl backdrop-blur sm:p-8">
+          <Button
+            onClick={handleGoogle}
+            className="w-full"
+            variant="outline"
+            disabled={isGoogleLoading}
+          >
+            {isGoogleLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <GoogleIcon className="mr-2 h-4 w-4" />
+            )}
+            Ingresar con Google
           </Button>
-        </form>
+
+          <div className="my-5 flex items-center gap-3 text-xs font-medium text-slate-400">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span>o con tu email</span>
+            <div className="h-px flex-1 bg-slate-200" />
+          </div>
+
+          <form className="space-y-3" onSubmit={handleEmailLogin}>
+            <div className="relative">
+              <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                type="email"
+                placeholder="Correo electrónico"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="pl-10"
+              />
+            </div>
+            <div className="relative">
+              <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                type="password"
+                placeholder="Contraseña"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="pl-10"
+              />
+            </div>
+            {error && (
+              <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-destructive">{error}</p>
+            )}
+            <Button type="submit" className="w-full" disabled={isEmailLoading}>
+              {isEmailLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <LogIn className="mr-2 h-4 w-4" />
+              )}
+              Ingresar con email y contraseña
+            </Button>
+          </form>
+
+          <p className="mt-5 text-center text-sm text-slate-500">
+            ¿No tenés cuenta?{' '}
+            <Link to="/register" className="font-semibold text-blue-600 hover:text-blue-500">
+              Registrate
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
 };
 
 export default Login;
-

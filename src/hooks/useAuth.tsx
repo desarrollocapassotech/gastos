@@ -4,6 +4,7 @@ import {
   GoogleAuthProvider,
   User,
   UserCredential,
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -28,6 +29,7 @@ interface AuthContextType {
   profileChecked: boolean;
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<UserCredential>;
+  signUpWithEmail: (email: string, password: string) => Promise<UserCredential>;
   signOutUser: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -41,6 +43,10 @@ const AuthContext = createContext<AuthContextType>({
   signInWithEmail: () =>
     Promise.reject<UserCredential>(
       new Error('signInWithEmail not implemented')
+    ),
+  signUpWithEmail: () =>
+    Promise.reject<UserCredential>(
+      new Error('signUpWithEmail not implemented')
     ),
   signOutUser: async () => {},
   refreshProfile: async () => {},
@@ -94,6 +100,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return signInWithEmailAndPassword(auth, email, password);
   };
 
+  const signUpWithEmail = (email: string, password: string) => {
+    return createUserWithEmailAndPassword(auth, email, password);
+  };
+
   const signOutUser = () => signOut(auth);
 
   const refreshProfile = async () => {
@@ -111,6 +121,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         profileChecked,
         signInWithGoogle,
         signInWithEmail,
+        signUpWithEmail,
         signOutUser,
         refreshProfile,
       }}
