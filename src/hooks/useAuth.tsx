@@ -9,7 +9,6 @@ import {
   signInWithPopup,
   signInWithCredential,
   signOut,
-  signInWithRedirect,
 } from 'firebase/auth';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { doc, getDoc } from 'firebase/firestore';
@@ -78,13 +77,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => unsub();
   }, []);
 
-  // const signInWithGoogle = async () => {
-  //   const provider = new GoogleAuthProvider();
-  //   await signInWithPopup(auth, provider);
-  // };
   const signInWithGoogle = async () => {
     if (Capacitor.isNativePlatform()) {
-      const res = await FirebaseAuthentication.signInWithGoogle(); 
+      const res = await FirebaseAuthentication.signInWithGoogle();
       const idToken = res.credential?.idToken;
       if (!idToken) throw new Error('No se recibió idToken');
       const cred = GoogleAuthProvider.credential(idToken);
@@ -92,7 +87,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
     const provider = new GoogleAuthProvider();
-    return signInWithRedirect(auth, provider); 
+    await signInWithPopup(auth, provider);
   };
 
   const signInWithEmail = (email: string, password: string) => {
